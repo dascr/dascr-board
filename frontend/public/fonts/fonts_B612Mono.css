@@ -1,0 +1,6 @@
+@font-face {
+  font-family: 'B612Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: local('B612Mono Regular'), local('B612Mono-Regular'), url(B612Mono-Regular.ttf) format('truetype');
+}

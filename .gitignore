@@ -1,0 +1,9 @@
+node_modules/
+yarn.lock
+uploads/
+*.db
+.env
+frontend/.env
+frontend/public/build
+dist
+static/resource.go
