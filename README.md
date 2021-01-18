@@ -195,6 +195,44 @@ INFO   [2021-01-18 11:16:19] Starting API at: 0.0.0.0:8000
 
 Those are basically all endpoints (you can read them when starting with DEBUG=TRUE in the console). The most important ones are `POST /api/game/{id}/nextPlayer` and `POST /api/game/{id}/throw/{number}/{modifier}`. Those are the endpoints a recognition software should send to (and will after finishing dascr-machine and dascr-cam).
 
+# Screenshots
+
+Here are a few screenshots of the games and the UI.
+
+## Setup
+
+Player Setup
+
+![Player Setup](https://raw.githubusercontent.com/patrickhener/image-cdn/main/dascr-board-player.png)
+
+Start Page
+
+![Start](https://raw.githubusercontent.com/patrickhener/image-cdn/main/dascr-board-start.png)
+
+Game Setup
+
+![Game Setup](https://raw.githubusercontent.com/patrickhener/image-cdn/main/dascr-board-game.png)
+
+## X01
+
+Scoreboard
+
+![](https://raw.githubusercontent.com/patrickhener/image-cdn/main/dascr-board-x01-board.png)
+
+Controller
+
+![](https://raw.githubusercontent.com/patrickhener/image-cdn/main/dascr-board-x01-controller.png)
+
+## Cricket
+
+Scoreboard
+
+![](https://raw.githubusercontent.com/patrickhener/image-cdn/main/dascr-board-cricket-board.png)
+
+Controller
+
+![](https://raw.githubusercontent.com/patrickhener/image-cdn/main/dascr-board-cricket-controller.png)
+
 # Roadmap
 
 Right now I am missing a few things I planned on.
