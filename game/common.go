@@ -41,17 +41,17 @@ func getLastThreeThrows(player *player.Player, base *BaseGame) *player.Player {
 	// and sum of it
 	player.LastThrows = make([]throw.Throw, 0)
 	lastThreeSum := 0
-	alreadyThrown := len(player.ThrowRounds[base.ThrowRound-1].Throws)
+	// alreadyThrown := len(player.ThrowRounds[base.ThrowRound-1].Throws)
 	for _, thr := range player.ThrowRounds[base.ThrowRound-1].Throws {
 		player.LastThrows = append(player.LastThrows, thr)
 		lastThreeSum += thr.Number * thr.Modifier
 	}
-	for i := alreadyThrown; i <= 2; i++ {
-		player.LastThrows = append(player.LastThrows, throw.Throw{
-			Number:   0,
-			Modifier: 0,
-		})
-	}
+	// for i := alreadyThrown; i <= 2; i++ {
+	// 	player.LastThrows = append(player.LastThrows, throw.Throw{
+	// 		Number:   0,
+	// 		Modifier: 0,
+	// 	})
+	// }
 	player.ThrowSum = lastThreeSum
 	return player
 }

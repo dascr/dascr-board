@@ -100,6 +100,12 @@
                                         {:else}{thr.Number}{/if}
                                     </td>
                                 {/each}
+                                {#each Array(3 - player.LastThrows.length) as _, _}
+                                    <td
+                                        class="p-2 text-4xl font-extrabold text-center w-1/4 border-r border-dashed border-white border-opacity-10">
+                                        -
+                                    </td>
+                                {/each}
                                 <td
                                     rowspan="2"
                                     class="pl-4 p-2 text-4xl font-extrabold text-left w-1/4">

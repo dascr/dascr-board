@@ -229,6 +229,12 @@
                         {:else}{thr.Number}{/if}
                     </td>
                 {/each}
+                {#each Array(3 - player.LastThrows.length) as _, _}
+                    <td
+                        class="border-r border-l border-dashed border-opacity-10">
+                        -
+                    </td>
+                {/each}
                 <td
                     class="px-3 border-l border-r border-dashed border.opacity-10">
                     {player.ThrowSum}
@@ -288,9 +294,4 @@
             class="text-2xl font-extrabold p-7 bg-black bg-opacity-30 hover:bg-opacity-50 border text-center rounded focus:outline-none"
             on:click={undo}>Undo</button>
     </div>
-    <!-- <div class="grid grid-cols-1 grid-rows-1 gap-4 mt-4">
-        <button
-            class="text-2xl font-extrabold p-7 bg-black bg-opacity-30 hover:bg-opacity-50 border text-center rounded focus:outline-none"
-            on:click={nextPlayer}>Next Player</button>
-    </div> -->
 </div>

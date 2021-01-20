@@ -258,6 +258,12 @@
                         {:else}{thr.Number}{/if}
                     </td>
                 {/each}
+                {#each Array(3 - player.LastThrows.length) as _, _}
+                    <td
+                        class="border-r border-l border-dashed border-opacity-10">
+                        -
+                    </td>
+                {/each}
                 <td class="px-3 border-l border-dashed border.opacity-10">
                     {player.TotalThrowCount}
                 </td>

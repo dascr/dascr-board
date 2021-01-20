@@ -44,6 +44,10 @@
                             {:else}{lt.Number}{/if}
                         </td>
                     {/each}
+
+                    {#each Array(3 - lastThree.length) as _, _}
+                        <td>-</td>
+                    {/each}
                 </tr>
             </table>
         </div>
