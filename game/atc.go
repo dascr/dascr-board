@@ -76,7 +76,6 @@ func (g *ATCGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 			}
 			activePlayer.ThrowRounds = append(activePlayer.ThrowRounds, *newRound)
 			g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CREATETHROWROUND", RoundNumber: newRound.Round, Player: activePlayer})
-
 		}
 		// Now add throw to that round or to the existing
 		throwRound := &activePlayer.ThrowRounds[g.Base.ThrowRound-1]

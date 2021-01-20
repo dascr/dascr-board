@@ -1,25 +1,31 @@
 package game
 
 import (
+	"github.com/dascr/dascr-board/throw"
 	"github.com/dascr/dascr-board/undo"
 	"github.com/dascr/dascr-board/utils"
 )
 
 // UndoCreateThrowRound is the undo action for CREATETHROWROUND
 func UndoCreateThrowRound(action undo.Undo) {
-	throwRounds := action.Player.ThrowRounds
-	if len(throwRounds) > 0 {
-		throwRounds = throwRounds[:len(throwRounds)-1]
+	for i, rnd := range action.Player.ThrowRounds {
+		if rnd.Round == action.RoundNumber {
+			copy(action.Player.ThrowRounds[i:], action.Player.ThrowRounds[i+1:])
+			action.Player.ThrowRounds[len(action.Player.ThrowRounds)-1] = throw.Round{}
+			action.Player.ThrowRounds = action.Player.ThrowRounds[:len(action.Player.ThrowRounds)-1]
+		}
 	}
 }
 
 // UndoCreateThrow is the undo action for CREATETHROW
 func UndoCreateThrow(action undo.Undo) {
-	throwRound := &action.Player.ThrowRounds[action.RoundNumber-1]
-	if len(throwRound.Throws) > 0 {
-		throwRound.Throws = throwRound.Throws[:len(throwRound.Throws)-1]
+	if len(action.Player.ThrowRounds) > 0 {
+		throwRound := &action.Player.ThrowRounds[action.RoundNumber-1]
+		if len(throwRound.Throws) > 0 {
+			throwRound.Throws = throwRound.Throws[:len(throwRound.Throws)-1]
+		}
+		action.Player.TotalThrowCount--
 	}
-	action.Player.TotalThrowCount--
 }
 
 // UndoScore is the undo action for UPDATESCORE
@@ -128,4 +134,9 @@ func UndoWin(action undo.Undo, base *BaseGame) {
 // UndoATCIncreaseNumber is the undo action for ATCINCREASENUMBER
 func UndoATCIncreaseNumber(action undo.Undo) {
 	action.Player.Score.CurrentNumber = action.PreviousNumberToHit
+}
+
+// UndoUpdateSplitScore is the undo action for UPDATESPLITSCORE
+func UndoUpdateSplitScore(action undo.Undo) {
+	action.Player.Score.Score = action.PreviousScore
 }

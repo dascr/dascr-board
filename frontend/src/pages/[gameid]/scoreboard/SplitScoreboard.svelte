@@ -11,6 +11,18 @@
     let players = [];
     let activePlayer = {};
 
+    const hitOrder = [
+        '15',
+        '16',
+        'Any Double',
+        '17',
+        '18',
+        'Any Triple',
+        '19',
+        '20',
+        '25',
+    ];
+
     async function update() {
         const res = await api.get(`game/${gameid}/display`);
         gameData = await res.json();
@@ -38,11 +50,11 @@
 <div
     class="flex flex-row mx-auto bg-black bg-opacity-30 rounded-t-2xl overflow-hidden">
     <p class="text-center border w-1/3 font-bold text-lg rounded-tl-2xl p-2">
-        Game: Around The Clock
+        Game: Split-Score
     </p>
     <p class="text-center border w-1/3 font-bold text-lg p-2">
         Variant:
-        {gameData.Variant}
+        {#if gameData.Variant === 'edart'}E-Dart{:else}Steel Dart{/if}
     </p>
     <p class="text-center border w-1/3 font-bold text-lg rounded-tr-2xl p-2">
         Round:
@@ -71,7 +83,16 @@
                     active={i === gameData.ActivePlayer}>
                     <div slot="points">
                         <p class="font-extrabold text-5xl mt-5">
-                            {gameData.Podium.includes(player.UID) ? 'Place ' + (gameData.Podium.indexOf(player.UID) + 1) : player.Score.CurrentNumber}
+                            {player.Score.Score}
+                        </p>
+                        <p class="font-semibold text-4xl mt-5">
+                            {#if gameData.Variant === 'steel'}
+                                {#if gameData.ThrowRound >= 2}
+                                    {gameData.Podium.includes(player.UID) ? 'Place ' + (gameData.Podium.indexOf(player.UID) + 1) : 'Hit ' + hitOrder[gameData.ThrowRound - 2]}
+                                {:else}Throw Start Score{/if}
+                            {:else}
+                                {gameData.Podium.includes(player.UID) ? 'Place ' + (gameData.Podium.indexOf(player.UID) + 1) : 'Hit ' + hitOrder[gameData.ThrowRound - 1]}
+                            {/if}
                         </p>
                         <p class="font-semibold  text-2xl mt-5 flex flex-row">
                             <img

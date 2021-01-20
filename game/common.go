@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 
+	"github.com/dascr/dascr-board/logger"
 	"github.com/dascr/dascr-board/player"
 	"github.com/dascr/dascr-board/throw"
 	"github.com/dascr/dascr-board/undo"
@@ -41,18 +42,18 @@ func getLastThreeThrows(player *player.Player, base *BaseGame) *player.Player {
 	// and sum of it
 	player.LastThrows = make([]throw.Throw, 0)
 	lastThreeSum := 0
-	// alreadyThrown := len(player.ThrowRounds[base.ThrowRound-1].Throws)
-	for _, thr := range player.ThrowRounds[base.ThrowRound-1].Throws {
-		player.LastThrows = append(player.LastThrows, thr)
-		lastThreeSum += thr.Number * thr.Modifier
+	if len(player.ThrowRounds) > 0 {
+		if len(player.ThrowRounds[base.ThrowRound-1].Throws) != 0 {
+			for _, thr := range player.ThrowRounds[base.ThrowRound-1].Throws {
+				player.LastThrows = append(player.LastThrows, thr)
+				lastThreeSum += thr.Number * thr.Modifier
+			}
+			player.ThrowSum = lastThreeSum
+		}
+	} else {
+		player.LastThrows = make([]throw.Throw, 3)
 	}
-	// for i := alreadyThrown; i <= 2; i++ {
-	// 	player.LastThrows = append(player.LastThrows, throw.Throw{
-	// 		Number:   0,
-	// 		Modifier: 0,
-	// 	})
-	// }
-	player.ThrowSum = lastThreeSum
+
 	return player
 }
 
@@ -168,17 +169,19 @@ func switchToNextPlayer(base *BaseGame, h *ws.Hub) {
 
 		currentThrowRound := &activePlayer.ThrowRounds[base.ThrowRound-1]
 		count := 3 - len(currentThrowRound.Throws)
-		for i := 0; i < count; i++ {
-			newThrow := &throw.Throw{
-				Number:   0,
-				Modifier: 1,
-			}
-			currentThrowRound.Throws = append(currentThrowRound.Throws, *newThrow)
-			base.UndoLog = append(base.UndoLog, undo.Undo{Sequence: sequence, Action: "CREATETHROW", Player: activePlayer, RoundNumber: currentThrowRound.Round})
+		if count != 0 {
+			for i := 0; i < count; i++ {
+				newThrow := &throw.Throw{
+					Number:   0,
+					Modifier: 1,
+				}
+				currentThrowRound.Throws = append(currentThrowRound.Throws, *newThrow)
+				base.UndoLog = append(base.UndoLog, undo.Undo{Sequence: sequence, Action: "CREATETHROW", Player: activePlayer, RoundNumber: currentThrowRound.Round})
 
+			}
+			currentThrowRound.Done = true
+			base.UndoLog = append(base.UndoLog, undo.Undo{Sequence: sequence, Action: "CLOSEPLAYERTHROWROUND", Player: activePlayer, RoundNumber: currentThrowRound.Round, GameID: base.UID, PreviousGameState: previousState, PreviousMessage: previousMessage})
 		}
-		currentThrowRound.Done = true
-		base.UndoLog = append(base.UndoLog, undo.Undo{Sequence: sequence, Action: "CLOSEPLAYERTHROWROUND", Player: activePlayer, RoundNumber: currentThrowRound.Round, GameID: base.UID, PreviousGameState: previousState, PreviousMessage: previousMessage})
 
 		// Switch player
 		base.ActivePlayer = utils.ChooseNextPlayer(base.Player, base.ActivePlayer, base.Podium)
@@ -209,11 +212,23 @@ func triggerUndo(base *BaseGame, h *ws.Hub) error {
 		return errors.New("there is nothing to undo")
 	}
 	var sequenceActions []undo.Undo
+	var parkAction undo.Undo
 	for _, s := range base.UndoLog {
 		if s.Sequence == lastSequence {
+			if s.Action == "CREATETHROWROUND" {
+				parkAction = s
+				continue
+			}
+
 			sequenceActions = append(sequenceActions, s)
 		}
+
+		if parkAction.Action == "CREATETHROWROUND" {
+			sequenceActions = append(sequenceActions, parkAction)
+		}
 	}
+
+	logger.Debugf("Sequence is: %+v", sequenceActions)
 
 	for _, a := range sequenceActions {
 		switch a.Action {
@@ -221,10 +236,10 @@ func triggerUndo(base *BaseGame, h *ws.Hub) error {
 		case "CREATEGAME":
 			// Do nothing
 			break
-		case "CREATETHROW":
-			UndoCreateThrow(a)
 		case "CREATETHROWROUND":
 			UndoCreateThrowRound(a)
+		case "CREATETHROW":
+			UndoCreateThrow(a)
 		case "DOWIN":
 			UndoWin(a, base)
 		case "DOPODIUM":
@@ -256,6 +271,9 @@ func triggerUndo(base *BaseGame, h *ws.Hub) error {
 		// ATC
 		case "ATCINCREASENUMBER":
 			UndoATCIncreaseNumber(a)
+		// Split
+		case "UPDATESPLITSCORE":
+			UndoUpdateSplitScore(a)
 		default:
 			break
 		}

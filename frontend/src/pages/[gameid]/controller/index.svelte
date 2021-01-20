@@ -3,6 +3,7 @@
     import X01Controller from './X01Controller.svelte';
     import CricketController from './CricketController.svelte';
     import AtcController from './ATCController.svelte';
+    import SplitController from './SplitController.svelte';
 
     export let gameid;
     let headerdiv = document.getElementsByClassName('header')[0];
@@ -27,6 +28,10 @@
 
             case 'atc':
                 gameMode = AtcController;
+                break;
+
+            case 'split':
+                gameMode = SplitController;
                 break;
 
             default:

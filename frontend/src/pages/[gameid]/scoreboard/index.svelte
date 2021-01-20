@@ -3,6 +3,7 @@
     import X01Scoreboard from './X01Scoreboard.svelte';
     import CricketScoreboard from './CricketScoreboard.svelte';
     import AtcScoreboard from './ATCScoreboard.svelte';
+    import SplitScoreboard from './SplitScoreboard.svelte';
 
     export let gameid;
     let headerdiv = document.getElementsByClassName('header')[0];
@@ -27,6 +28,10 @@
 
             case 'atc':
                 gameMode = AtcScoreboard;
+                break;
+
+            case 'split':
+                gameMode = SplitScoreboard;
                 break;
 
             default:
