@@ -124,3 +124,8 @@ func UndoWin(action undo.Undo, base *BaseGame) {
 	base.GameState = action.PreviousGameState
 	base.Message = action.PreviousMessage
 }
+
+// UndoATCIncreaseNumber is the undo action for ATCINCREASENUMBER
+func UndoATCIncreaseNumber(action undo.Undo) {
+	action.Player.Score.CurrentNumber = action.PreviousNumberToHit
+}

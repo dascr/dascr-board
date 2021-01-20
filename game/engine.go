@@ -160,12 +160,23 @@ func CreateGame(db *sql.DB, h *ws.Hub) http.HandlerFunc {
 			}
 
 		case "atc":
-			logger.Info("NYI Game is Arount The Clock, dispatching")
-			w.WriteHeader(http.StatusNotImplemented)
-			if _, err := w.Write([]byte("Not yet implemented")); err != nil {
-				logger.Errorf("Error writing response back to browser: %+v", err)
+			data.GameObject = &ATCGame{
+				Base: BaseGame{
+					UID:          data.UID,
+					Game:         data.Game,
+					Player:       players,
+					Variant:      data.Variant,
+					ActivePlayer: activePlayer,
+					ThrowRound:   1,
+					GameState:    "THROW",
+					Message:      "",
+					Settings: &settings.Settings{
+						Podium:     data.Podium,
+						Sound:      data.Sound,
+						AutoSwitch: data.AutoSwitch,
+					},
+				},
 			}
-			return
 		case "split":
 			logger.Info("NYI Game is Split-Score, dispatching")
 			w.WriteHeader(http.StatusNotImplemented)

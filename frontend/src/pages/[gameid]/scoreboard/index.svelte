@@ -2,6 +2,7 @@
     import api from '../../../utils/api';
     import X01Scoreboard from './X01Scoreboard.svelte';
     import CricketScoreboard from './CricketScoreboard.svelte';
+    import AtcScoreboard from './ATCScoreboard.svelte';
 
     export let gameid;
     let headerdiv = document.getElementsByClassName('header')[0];
@@ -10,7 +11,7 @@
     headerdiv.style.display = 'none';
 
     const getGame = async () => {
-        let gameMode
+        let gameMode;
 
         const res = await api.get(`game/${gameid}`);
         let game = await res.json();
@@ -24,19 +25,24 @@
                 gameMode = CricketScoreboard;
                 break;
 
+            case 'atc':
+                gameMode = AtcScoreboard;
+                break;
+
             default:
-                throw new Error("Controller cannot be shown")
+                throw new Error('Controller cannot be shown');
                 break;
         }
-        return gameMode
-    }
+        return gameMode;
+    };
 
-    let promise = getGame()
+    let promise = getGame();
 </script>
 
 {#await promise}
-    <p>...loading</p>{:then game}
-    <svelte:component this={game} {gameid}/>
+    <p>...loading</p>
+{:then game}
+    <svelte:component this={game} {gameid} />
 {:catch error}
-    <p>There was an error {error.message}
-{/await   }
+    <p>There was an error {error.message}</p>
+{/await}

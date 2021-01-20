@@ -1,0 +1,108 @@
+<script>
+    import { url, goto } from '@roxi/routify';
+    import api from '../../../utils/api';
+    import { onMount } from 'svelte';
+    import ws from '../../../utils/socket';
+    import PlayerCard from '../../player/PlayerCard.svelte';
+    import { transformGameMessage } from '../../../utils/methods';
+
+    export let gameid;
+    let gameData = {};
+    let players = [];
+    let activePlayer = {};
+
+    async function update() {
+        const res = await api.get(`game/${gameid}/display`);
+        gameData = await res.json();
+        players = gameData.Player;
+        activePlayer = gameData.Player[gameData.ActivePlayer];
+        gameData.Message = transformGameMessage(gameData, activePlayer);
+    }
+
+    onMount(async () => {
+        // init websocket
+        const socket = ws.init(gameid, 'ATC Scoreboard');
+
+        update();
+
+        socket.addEventListener('update', () => {
+            update();
+        });
+
+        socket.addEventListener('redirect', () => {
+            $goto($url(`/${gameid}/start`));
+        });
+    });
+</script>
+
+<div
+    class="flex flex-row mx-auto bg-black bg-opacity-30 rounded-t-2xl overflow-hidden">
+    <p class="text-center border w-1/3 font-bold text-lg rounded-tl-2xl p-2">
+        Game:
+        {gameData.Game}
+    </p>
+    <p class="text-center border w-1/3 font-bold text-lg p-2">
+        Variant:
+        {gameData.Variant}
+    </p>
+    <p class="text-center border w-1/3 font-bold text-lg rounded-tr-2xl p-2">
+        Round:
+        {gameData.ThrowRound}
+    </p>
+</div>
+
+<div class="bg-black bg-opacity-30 rounded-b-2xl overflow-hidden">
+    <p
+        class="text-center border w-full font-extrabold text-4xl rounded-b-2xl p-2">
+        {gameData.Message}
+    </p>
+</div>
+
+<div class="max-w-full space-y-2">
+    <div class="flex flex-wrap">
+        {#each players as player, i}
+            <div class="w-full p-2 2xl:w-1/2">
+                <PlayerCard
+                    uid={player.UID}
+                    name={player.Name}
+                    nickname={player.Nickname}
+                    image={player.Image}
+                    showDelete={false}
+                    onDelete={() => {}}
+                    active={i === gameData.ActivePlayer}>
+                    <div slot="points">
+                        <p class="font-extrabold text-5xl mt-5">
+                            {gameData.Podium.includes(player.UID) ? 'Place ' + (gameData.Podium.indexOf(player.UID) + 1) : player.Score.CurrentNumber}
+                        </p>
+                        <p class="font-semibold  text-2xl mt-5 flex flex-row">
+                            <img
+                                src="/img/dart.png"
+                                width="32"
+                                height="32"
+                                alt=""
+                                class="mr-4" />
+                            {player.TotalThrowCount}
+                        </p>
+                    </div>
+                    <div slot="score" class="h-full">
+                        <table class="w-full h-full">
+                            <tr class="">
+                                {#each player.LastThrows as thr, i}
+                                    <td
+                                        class="p-2 text-4xl font-extrabold text-center w-1/4 border-dashed border-white border-opacity-10"
+                                        class:border-l={i != 0}>
+                                        {#if thr.Modifier === 2}
+                                            D{thr.Number}
+                                        {:else if thr.Modifier === 3}
+                                            T{thr.Number}
+                                        {:else}{thr.Number}{/if}
+                                    </td>
+                                {/each}
+                            </tr>
+                        </table>
+                    </div>
+                </PlayerCard>
+            </div>
+        {/each}
+    </div>
+</div>

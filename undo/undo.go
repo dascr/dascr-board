@@ -23,4 +23,5 @@ type Undo struct {
 	PreviousAverage     float64
 	PreviousLastThree   []throw.Throw
 	PreviousMessage     string
+	PreviousNumberToHit int
 }

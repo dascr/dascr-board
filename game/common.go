@@ -218,6 +218,9 @@ func triggerUndo(base *BaseGame, h *ws.Hub) error {
 			UndoCloseControllerNumber(a, base)
 		case "GAINPOINTS":
 			UndoGainPoints(a)
+		// ATC
+		case "ATCINCREASENUMBER":
+			UndoATCIncreaseNumber(a)
 		default:
 			break
 		}
