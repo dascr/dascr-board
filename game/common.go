@@ -145,8 +145,42 @@ func stripDisplay(base *BaseGame) BaseGame {
 func switchToNextPlayer(base *BaseGame, h *ws.Hub) {
 	sequence := base.UndoLog[len(base.UndoLog)-1].Sequence + 1
 	previousPlayerIndex := base.ActivePlayer
+	previousMessage := base.Message
+	previousState := base.GameState
+
 	// Switch to next player
 	if base.GameState != "WON" {
+		// fill empty throws of active player with 0
+		// before switching to next player
+		activePlayer := &base.Player[base.ActivePlayer]
+		// Check if ongoing round
+		ongoing := utils.CheckOngoingRound(activePlayer.ThrowRounds, base.ThrowRound)
+		if !ongoing {
+			// If there is no round associated with the current throw round of the game
+			// create one
+			newRound := &throw.Round{
+				Round:  base.ThrowRound,
+				Throws: []throw.Throw{},
+			}
+			activePlayer.ThrowRounds = append(activePlayer.ThrowRounds, *newRound)
+			base.UndoLog = append(base.UndoLog, undo.Undo{Sequence: sequence, Action: "CREATETHROWROUND", RoundNumber: newRound.Round, Player: activePlayer})
+		}
+
+		currentThrowRound := &activePlayer.ThrowRounds[base.ThrowRound-1]
+		count := 3 - len(currentThrowRound.Throws)
+		for i := 0; i < count; i++ {
+			newThrow := &throw.Throw{
+				Number:   0,
+				Modifier: 1,
+			}
+			currentThrowRound.Throws = append(currentThrowRound.Throws, *newThrow)
+			base.UndoLog = append(base.UndoLog, undo.Undo{Sequence: sequence, Action: "CREATETHROW", Player: activePlayer, RoundNumber: currentThrowRound.Round})
+
+		}
+		currentThrowRound.Done = true
+		base.UndoLog = append(base.UndoLog, undo.Undo{Sequence: sequence, Action: "CLOSEPLAYERTHROWROUND", Player: activePlayer, RoundNumber: currentThrowRound.Round, GameID: base.UID, PreviousGameState: previousState, PreviousMessage: previousMessage})
+
+		// Switch player
 		base.ActivePlayer = utils.ChooseNextPlayer(base.Player, base.ActivePlayer, base.Podium)
 		// Reset gamestate
 		base.GameState = "THROW"
@@ -154,7 +188,8 @@ func switchToNextPlayer(base *BaseGame, h *ws.Hub) {
 
 		base.UndoLog = append(base.UndoLog, undo.Undo{Sequence: sequence, Action: "NEXTPLAYER", PreviousPlayerIndex: previousPlayerIndex, GameID: base.UID})
 
-		// TODO fill empty throws with 0
+		// Set assets for Frontend
+		setFrontendAssets(activePlayer, base)
 
 		// Update scoreboard
 		utils.WSSendUpdate(base.UID, h)
