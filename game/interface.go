@@ -2,6 +2,7 @@ package game
 
 import (
 	"github.com/dascr/dascr-board/player"
+	"github.com/dascr/dascr-board/podium"
 	"github.com/dascr/dascr-board/settings"
 	"github.com/dascr/dascr-board/undo"
 	"github.com/dascr/dascr-board/ws"
@@ -21,8 +22,8 @@ type BaseGame struct {
 	GameState         string
 	Message           string
 	Settings          *settings.Settings
-	UndoLog           []undo.Undo
-	Podium            []string
+	UndoLog           *undo.Log
+	Podium            *podium.Podium
 	CricketController *CricketGameController
 }
 

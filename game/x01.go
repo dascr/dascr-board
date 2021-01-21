@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dascr/dascr-board/player"
+	"github.com/dascr/dascr-board/podium"
 	"github.com/dascr/dascr-board/score"
 	"github.com/dascr/dascr-board/throw"
 	"github.com/dascr/dascr-board/undo"
@@ -42,12 +43,12 @@ func (g *X01Game) StartGame() error {
 		g.Base.Player[i].Average = 0
 	}
 
-	g.Base.Podium = make([]string, 0)
+	g.Base.Podium = &podium.Podium{}
 
-	g.Base.UndoLog = make([]undo.Undo, 0)
-	g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{
-		Sequence: 0,
-		Action:   "CREATEGAME",
+	g.Base.UndoLog = &undo.Log{}
+	sequence := g.Base.UndoLog.CreateSequence()
+	sequence.AddActionToSequence(undo.Action{
+		Action: "CREATEGAME",
 	})
 
 	return nil
@@ -70,32 +71,17 @@ func (g *X01Game) NextPlayer(h *ws.Hub) {
 
 // RequestThrow will satisfy interface Game for game X01
 func (g *X01Game) RequestThrow(number, modifier int, h *ws.Hub) error {
-	sequence := g.Base.UndoLog[len(g.Base.UndoLog)-1].Sequence + 1
+	sequence := g.Base.UndoLog.CreateSequence()
 
 	points := number * modifier
 	activePlayer := &g.Base.Player[g.Base.ActivePlayer]
 	// Check game state
 	if g.Base.GameState == "THROW" {
-		// Check if ongoing round
-		ongoing := utils.CheckOngoingRound(activePlayer.ThrowRounds, g.Base.ThrowRound)
-		if !ongoing {
-			// If there is no round associated with the current throw round of the game
-			// create one
-			newRound := &throw.Round{
-				Round:  g.Base.ThrowRound,
-				Throws: []throw.Throw{},
-			}
-			activePlayer.ThrowRounds = append(activePlayer.ThrowRounds, *newRound)
-			g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CREATETHROWROUND", RoundNumber: newRound.Round, Player: activePlayer})
-		}
-		// Now add throw to that round or to the existing
-		throwRound := &activePlayer.ThrowRounds[g.Base.ThrowRound-1]
-		newThrow := &throw.Throw{
-			Number:   number,
-			Modifier: modifier,
-		}
-		throwRound.Throws = append(throwRound.Throws, *newThrow)
-		g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CREATETHROW", Player: activePlayer, RoundNumber: throwRound.Round})
+		// check if ongoing round else create
+		checkOngoingElseCreate(activePlayer, &g.Base, sequence)
+
+		// Add Throw to last round
+		throwRound := addThrowToCurrentRound(activePlayer, &g.Base, sequence, number, modifier)
 
 		// New score will be
 		newScore := activePlayer.Score.Score - points
@@ -147,8 +133,8 @@ func (g *X01Game) Rematch(h *ws.Hub) error {
 	// Reset game state
 	g.Base.Message = ""
 	g.Base.GameState = "THROW"
-	g.Base.Podium = make([]string, 0)
-	g.Base.UndoLog = make([]undo.Undo, 0)
+	g.Base.Podium.ResetPodium()
+	g.Base.UndoLog.ClearLog()
 	g.Base.ActivePlayer = rg.Intn(len(g.Base.Player))
 	g.Base.ThrowRound = 1
 
@@ -168,9 +154,9 @@ func (g *X01Game) Rematch(h *ws.Hub) error {
 		g.Base.Player[i].Average = 0
 	}
 
-	g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{
-		Sequence: 0,
-		Action:   "CREATEGAME",
+	sequence := g.Base.UndoLog.CreateSequence()
+	sequence.AddActionToSequence(undo.Action{
+		Action: "CREATEGAME",
 	})
 
 	// Update scoreboard
@@ -180,7 +166,7 @@ func (g *X01Game) Rematch(h *ws.Hub) error {
 }
 
 // This will handle x01bust and reset game state
-func x01bust(nextState string, game *X01Game, throwRound *throw.Round, activePlayer *player.Player, sequence, previousScore int) {
+func x01bust(nextState string, game *X01Game, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence, previousScore int) {
 	oldState := game.Base.GameState
 	previousMessage := game.Base.Message
 	previousParkScore := activePlayer.Score.ParkScore
@@ -197,11 +183,19 @@ func x01bust(nextState string, game *X01Game, throwRound *throw.Round, activePla
 	}
 	throwRound.Done = true
 	activePlayer.Score.Score = activePlayer.Score.ParkScore
-	game.Base.UndoLog = append(game.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "X01BUST", GameID: game.Base.UID, Player: activePlayer, PreviousGameState: oldState, PreviousScore: previousScore, PreviousParkScore: previousParkScore, PreviousMessage: previousMessage})
+	sequence.AddActionToSequence(undo.Action{
+		Action:            "X01BUST",
+		GameID:            game.Base.UID,
+		Player:            activePlayer,
+		PreviousGameState: oldState,
+		PreviousScore:     previousScore,
+		PreviousParkScore: previousParkScore,
+		PreviousMessage:   previousMessage,
+	})
 }
 
 // This will handle x01win
-func x01win(game *X01Game, modifier int, throwRound *throw.Round, activePlayer *player.Player, sequence int) {
+func x01win(game *X01Game, modifier int, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence) {
 	previousMessage := game.Base.Message
 	previousState := game.Base.GameState
 	previousScore := activePlayer.Score.Score
@@ -221,11 +215,20 @@ func x01win(game *X01Game, modifier int, throwRound *throw.Round, activePlayer *
 	throwRound.Done = true
 	activePlayer.Score.Score = 0
 	activePlayer.Score.ParkScore = 0
-	game.Base.UndoLog = append(game.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "DOWIN", GameID: game.Base.UID, PreviousGameState: previousState, PreviousMessage: previousMessage, Player: activePlayer, PreviousScore: previousScore, PreviousParkScore: previousParkScore})
+
+	sequence.AddActionToSequence(undo.Action{
+		Action:            "DOWIN",
+		GameID:            game.Base.UID,
+		PreviousGameState: previousState,
+		PreviousMessage:   previousMessage,
+		Player:            activePlayer,
+		PreviousScore:     previousScore,
+		PreviousParkScore: previousParkScore,
+	})
 }
 
 // This will handle the normal throw routine
-func normalThrow(game *X01Game, newScore, modifier int, throwRound *throw.Round, activePlayer *player.Player, sequence int) {
+func normalThrow(game *X01Game, newScore, modifier int, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence) {
 	// For undo function
 	previousScore := activePlayer.Score.Score
 	previousParkScore := activePlayer.Score.ParkScore
@@ -253,7 +256,18 @@ func normalThrow(game *X01Game, newScore, modifier int, throwRound *throw.Round,
 	}
 	// Update player score
 	activePlayer.Score.Score = newScore
-	game.Base.UndoLog = append(game.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "UPDATESCORE", PreviousScore: previousScore, PreviousAverage: previousAverage, PreviousThrowSum: previousThrowSum, PreviousLastThree: previousLastThree, Player: activePlayer})
+	sequence.AddActionToSequence(undo.Action{
+		Action:            "UPDATESCORE",
+		GameID:            game.Base.UID,
+		PreviousGameState: previousState,
+		PreviousMessage:   previousMessage,
+		Player:            activePlayer,
+		PreviousScore:     previousScore,
+		PreviousParkScore: previousParkScore,
+		PreviousAverage:   previousAverage,
+		PreviousThrowSum:  previousThrowSum,
+		PreviousLastThree: previousLastThree,
+	})
 
 	// Check if 3 throws in round and close round
 	// Also set gameState and perhaps increase game.Base.ThrowRound
@@ -261,12 +275,19 @@ func normalThrow(game *X01Game, newScore, modifier int, throwRound *throw.Round,
 	if len(throwRound.Throws) == 3 {
 		activePlayer.Score.Score = newScore
 		activePlayer.Score.ParkScore = newScore
-		game.Base.UndoLog = append(game.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "UPDATESCOREANDPARK", PreviousScore: previousScore, PreviousParkScore: previousParkScore, PreviousAverage: previousAverage, PreviousThrowSum: previousThrowSum, PreviousLastThree: previousLastThree, Player: activePlayer})
-		throwRound.Done = true
-		game.Base.GameState = "NEXTPLAYER"
-		game.Base.Message = "Remove Darts!"
-		game.Base.UndoLog = append(game.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CLOSEPLAYERTHROWROUND", Player: activePlayer, RoundNumber: throwRound.Round, GameID: game.Base.UID, PreviousGameState: previousState, PreviousMessage: previousMessage})
+		closePlayerRound(&game.Base, activePlayer, throwRound, sequence, []undo.Action{
+			undo.Action{
+				Action:            "UPDATESCOREANDPARK",
+				Player:            activePlayer,
+				PreviousScore:     previousScore,
+				PreviousParkScore: previousParkScore,
+				PreviousAverage:   previousAverage,
+				PreviousThrowSum:  previousThrowSum,
+				PreviousLastThree: previousLastThree,
+			},
+		}, previousState, previousMessage)
 	}
+
 }
 
 // This will check if a checkout is even possible anymore and return a bool

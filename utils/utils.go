@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dascr/dascr-board/player"
+	"github.com/dascr/dascr-board/podium"
 	"github.com/dascr/dascr-board/throw"
 	"github.com/dascr/dascr-board/ws"
 )
@@ -32,15 +33,15 @@ func CheckOngoingRound(rnds []throw.Round, currentRound int) bool {
 }
 
 // CheckRoundDone will see if everyone has thrown to the ongoing game.ThrowRound
-func CheckRoundDone(players []player.Player, currentRound int, podium []string) bool {
+func CheckRoundDone(players []player.Player, currentRound int, podium *podium.Podium) bool {
 	var rnds = 0
 	var playersInGame []player.Player
 
 	// Fill slice with players still in game
 	for _, pl := range players {
 		var contained = false
-		for _, p := range podium {
-			if pl.UID == p {
+		for _, p := range *podium {
+			if pl.UID == p.Player.UID {
 				contained = true
 			}
 		}
@@ -87,7 +88,7 @@ func GetRandomCricketNumbers(order bool) []int {
 
 // ChooseNextPlayer will return next index for player slice
 // Currently used in X01, Cricket
-func ChooseNextPlayer(playerSlice []player.Player, activeIndex int, podium []string) int {
+func ChooseNextPlayer(playerSlice []player.Player, activeIndex int, podium *podium.Podium) int {
 	playerCount := len(playerSlice)
 	playerIndex := activeIndex
 
@@ -98,8 +99,8 @@ func ChooseNextPlayer(playerSlice []player.Player, activeIndex int, podium []str
 		}
 
 		var contained = false
-		for _, p := range podium {
-			if playerSlice[playerIndex].UID == p {
+		for _, p := range *podium {
+			if playerSlice[playerIndex].UID == p.Player.UID {
 				contained = true
 			}
 		}

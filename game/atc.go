@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/dascr/dascr-board/player"
+	"github.com/dascr/dascr-board/podium"
 	"github.com/dascr/dascr-board/score"
 	"github.com/dascr/dascr-board/throw"
 	"github.com/dascr/dascr-board/undo"
@@ -30,12 +31,12 @@ func (g *ATCGame) StartGame() error {
 		g.Base.Player[i].LastThrows = make([]throw.Throw, 3)
 	}
 
-	g.Base.Podium = make([]string, 0)
+	g.Base.Podium = &podium.Podium{}
 
-	g.Base.UndoLog = make([]undo.Undo, 0)
-	g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{
-		Sequence: 0,
-		Action:   "CREATEGAME",
+	g.Base.UndoLog = &undo.Log{}
+	sequence := g.Base.UndoLog.CreateSequence()
+	sequence.AddActionToSequence(undo.Action{
+		Action: "CREATEGAME",
 	})
 
 	return nil
@@ -58,33 +59,18 @@ func (g *ATCGame) NextPlayer(h *ws.Hub) {
 
 // RequestThrow will satisfy inteface Game for ATC
 func (g *ATCGame) RequestThrow(number, modifier int, h *ws.Hub) error {
-	sequence := g.Base.UndoLog[len(g.Base.UndoLog)-1].Sequence + 1
+	sequence := g.Base.UndoLog.CreateSequence()
 	activePlayer := &g.Base.Player[g.Base.ActivePlayer]
 	previousMessage := g.Base.Message
 	previousState := g.Base.GameState
 
 	// Check game state
 	if g.Base.GameState == "THROW" {
-		// Check if ongoing round
-		ongoing := utils.CheckOngoingRound(activePlayer.ThrowRounds, g.Base.ThrowRound)
-		if !ongoing {
-			// If there is no round associated with the current throw round of the game
-			// create one
-			newRound := &throw.Round{
-				Round:  g.Base.ThrowRound,
-				Throws: []throw.Throw{},
-			}
-			activePlayer.ThrowRounds = append(activePlayer.ThrowRounds, *newRound)
-			g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CREATETHROWROUND", RoundNumber: newRound.Round, Player: activePlayer})
-		}
-		// Now add throw to that round or to the existing
-		throwRound := &activePlayer.ThrowRounds[g.Base.ThrowRound-1]
-		newThrow := &throw.Throw{
-			Number:   number,
-			Modifier: modifier,
-		}
-		throwRound.Throws = append(throwRound.Throws, *newThrow)
-		g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CREATETHROW", Player: activePlayer, RoundNumber: throwRound.Round})
+		// check if ongoing round else create
+		checkOngoingElseCreate(activePlayer, &g.Base, sequence)
+
+		// Add Throw to last round
+		throwRound := addThrowToCurrentRound(activePlayer, &g.Base, sequence, number, modifier)
 
 		// Score logic
 		if activePlayer.Score.CurrentNumber == number {
@@ -105,10 +91,7 @@ func (g *ATCGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 		// Also set gameState and perhaps increase game.Base.ThrowRound
 		// if everyone has already thrown to this round
 		if len(throwRound.Throws) == 3 {
-			throwRound.Done = true
-			g.Base.GameState = "NEXTPLAYER"
-			g.Base.Message = "Remove Darts!"
-			g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CLOSEPLAYERTHROWROUND", Player: activePlayer, RoundNumber: throwRound.Round, GameID: g.Base.UID, PreviousGameState: previousState, PreviousMessage: previousMessage})
+			closePlayerRound(&g.Base, activePlayer, throwRound, sequence, []undo.Action{}, previousState, previousMessage)
 		}
 	}
 
@@ -139,8 +122,8 @@ func (g *ATCGame) Rematch(h *ws.Hub) error {
 	// Reset game state
 	g.Base.Message = ""
 	g.Base.GameState = "THROW"
-	g.Base.Podium = make([]string, 0)
-	g.Base.UndoLog = make([]undo.Undo, 0)
+	g.Base.Podium.ResetPodium()
+	g.Base.UndoLog.ClearLog()
 	g.Base.ActivePlayer = rg.Intn(len(g.Base.Player))
 	g.Base.ThrowRound = 1
 
@@ -153,9 +136,9 @@ func (g *ATCGame) Rematch(h *ws.Hub) error {
 		g.Base.Player[i].LastThrows = make([]throw.Throw, 3)
 	}
 
-	g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{
-		Sequence: 0,
-		Action:   "CREATEGAME",
+	sequence := g.Base.UndoLog.CreateSequence()
+	sequence.AddActionToSequence(undo.Action{
+		Action: "CREATEGAME",
 	})
 
 	// Update scoreboard
@@ -167,7 +150,7 @@ func (g *ATCGame) Rematch(h *ws.Hub) error {
 // increases active players number by one
 // will go from 20 to 25
 // will go from 25 to win
-func increaseNumberByOne(game *ATCGame, throwRound *throw.Round, p *player.Player, sequence int) {
+func increaseNumberByOne(game *ATCGame, throwRound *throw.Round, p *player.Player, sequence *undo.Sequence) {
 	previousNumberToHit := p.Score.CurrentNumber
 	if p.Score.CurrentNumber == 25 {
 		atcwin(game, throwRound, p, sequence)
@@ -176,11 +159,16 @@ func increaseNumberByOne(game *ATCGame, throwRound *throw.Round, p *player.Playe
 	} else {
 		p.Score.CurrentNumber = 25
 	}
-	game.Base.UndoLog = append(game.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "ATCINCREASENUMBER", GameID: game.Base.UID, Player: p, PreviousNumberToHit: previousNumberToHit})
+	sequence.AddActionToSequence(undo.Action{
+		Action:              "ATCINCREASENUMBER",
+		GameID:              game.Base.UID,
+		Player:              p,
+		PreviousNumberToHit: previousNumberToHit,
+	})
 }
 
 // atcwin is for winning the atc game
-func atcwin(game *ATCGame, throwRound *throw.Round, activePlayer *player.Player, sequence int) {
+func atcwin(game *ATCGame, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence) {
 	previousMessage := game.Base.Message
 	previousState := game.Base.GameState
 
@@ -192,5 +180,11 @@ func atcwin(game *ATCGame, throwRound *throw.Round, activePlayer *player.Player,
 
 	doWin(&game.Base)
 	throwRound.Done = true
-	game.Base.UndoLog = append(game.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "DOWIN", GameID: game.Base.UID, PreviousGameState: previousState, PreviousMessage: previousMessage, Player: activePlayer})
+	sequence.AddActionToSequence(undo.Action{
+		Action:            "DOWIN",
+		GameID:            game.Base.UID,
+		PreviousGameState: previousState,
+		PreviousMessage:   previousMessage,
+		Player:            activePlayer,
+	})
 }

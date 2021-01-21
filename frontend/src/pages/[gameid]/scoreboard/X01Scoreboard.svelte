@@ -4,7 +4,10 @@
     import { onMount } from 'svelte';
     import ws from '../../../utils/socket';
     import PlayerCard from '../../player/PlayerCard.svelte';
-    import { transformGameMessage } from '../../../utils/methods';
+    import {
+        scoreOrPodium,
+        transformGameMessage,
+    } from '../../../utils/methods';
 
     export let gameid;
     let gameData = {};
@@ -75,7 +78,7 @@
                     active={i === gameData.ActivePlayer}>
                     <div slot="points">
                         <p class="font-extrabold text-5xl mt-5">
-                            {gameData.Podium.includes(player.UID) ? 'Place ' + (gameData.Podium.indexOf(player.UID) + 1) : player.Score.Score}
+                            {scoreOrPodium(player, gameData)}
                         </p>
                         <p class="font-semibold  text-2xl mt-5 flex flex-row">
                             <img

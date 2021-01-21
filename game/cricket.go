@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dascr/dascr-board/player"
+	"github.com/dascr/dascr-board/podium"
 	"github.com/dascr/dascr-board/score"
 	"github.com/dascr/dascr-board/throw"
 	"github.com/dascr/dascr-board/undo"
@@ -69,12 +70,12 @@ func (g *CricketGame) StartGame() error {
 		g.Base.Player[i].LastThrows = make([]throw.Throw, 3)
 	}
 
-	g.Base.Podium = make([]string, 0)
+	g.Base.Podium = &podium.Podium{}
 
-	g.Base.UndoLog = []undo.Undo{}
-	g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{
-		Sequence: 0,
-		Action:   "CREATEGAME",
+	g.Base.UndoLog = &undo.Log{}
+	sequence := g.Base.UndoLog.CreateSequence()
+	sequence.AddActionToSequence(undo.Action{
+		Action: "CREATEGAME",
 	})
 
 	return nil
@@ -97,7 +98,7 @@ func (g *CricketGame) NextPlayer(h *ws.Hub) {
 
 // RequestThrow will satisfy interface Game for game Cricket
 func (g *CricketGame) RequestThrow(number, modifier int, h *ws.Hub) error {
-	sequence := g.Base.UndoLog[len(g.Base.UndoLog)-1].Sequence + 1
+	sequence := g.Base.UndoLog.CreateSequence()
 	previousMessage := g.Base.Message
 	previousState := g.Base.GameState
 
@@ -106,25 +107,11 @@ func (g *CricketGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 
 	// Check game state
 	if g.Base.GameState == "THROW" {
-		ongoing := utils.CheckOngoingRound(activePlayer.ThrowRounds, g.Base.ThrowRound)
-		if !ongoing {
-			// If there is no round associated with the current throw round of the game
-			// create one
-			newRound := &throw.Round{
-				Round:  g.Base.ThrowRound,
-				Throws: []throw.Throw{},
-			}
-			activePlayer.ThrowRounds = append(activePlayer.ThrowRounds, *newRound)
-			g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CREATETHROWROUND", RoundNumber: newRound.Round, Player: activePlayer})
-		}
-		// Now add throw to that round or to the existing
-		throwRound := &activePlayer.ThrowRounds[g.Base.ThrowRound-1]
-		newThrow := &throw.Throw{
-			Number:   number,
-			Modifier: modifier,
-		}
-		throwRound.Throws = append(throwRound.Throws, *newThrow)
-		g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CREATETHROW", Player: activePlayer, RoundNumber: throwRound.Round})
+		// check if ongoing round else create
+		checkOngoingElseCreate(activePlayer, &g.Base, sequence)
+
+		// Add Throw to last round
+		throwRound := addThrowToCurrentRound(activePlayer, &g.Base, sequence, number, modifier)
 
 		// Filter if throw is relevant at all
 		// and assign index if applicable
@@ -143,7 +130,11 @@ func (g *CricketGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 			if g.Base.CricketController.Ghost {
 				if !g.Base.CricketController.NumberRevealed[index] {
 					g.Base.CricketController.NumberRevealed[index] = true
-					g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "REVEALNUMBER", NumberIndex: index, GameID: g.Base.UID})
+					sequence.AddActionToSequence(undo.Action{
+						Action:      "REVEALNUMBER",
+						NumberIndex: index,
+						GameID:      g.Base.UID,
+					})
 				}
 			}
 
@@ -155,12 +146,21 @@ func (g *CricketGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 				// calculate relevant mod
 
 				points := number * relevantMod
-				g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "INCREASEHITCOUNT", NumberIndex: index, Modifier: modifier, Player: activePlayer})
+				sequence.AddActionToSequence(undo.Action{
+					Action:      "INCREASEHITCOUNT",
+					NumberIndex: index,
+					Modifier:    modifier,
+					Player:      activePlayer,
+				})
 
 				// Check if number has to be closed for player
 				if !checkClosed(activePlayer.Score, index) && checkToClose(activePlayer.Score, index) {
 					activePlayer.Score.Closed[index] = true
-					g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CLOSEPLAYERNUMBER", NumberIndex: index, Player: activePlayer})
+					sequence.AddActionToSequence(undo.Action{
+						Action:      "CLOSEPLAYERNUMBER",
+						NumberIndex: index,
+						Player:      activePlayer,
+					})
 				}
 
 				// Dispatch to different scoring modes
@@ -183,7 +183,11 @@ func (g *CricketGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 				}
 				if done {
 					g.Base.CricketController.NumberClosed[index] = true
-					g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CLOSECONTROLLERNUMBER", NumberIndex: index, GameID: g.Base.UID})
+					sequence.AddActionToSequence(undo.Action{
+						Action:      "CLOSECONTROLLERNUMBER",
+						NumberIndex: index,
+						GameID:      g.Base.UID,
+					})
 				}
 			}
 		}
@@ -192,10 +196,7 @@ func (g *CricketGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 		// Also set gameState and perhaps increase g.Base.ThrowRound
 		// if everyone has already thrown to this round
 		if len(throwRound.Throws) == 3 {
-			throwRound.Done = true
-			g.Base.GameState = "NEXTPLAYER"
-			g.Base.Message = "Remove Darts!"
-			g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CLOSEPLAYERTHROWROUND", Player: activePlayer, RoundNumber: throwRound.Round, GameID: g.Base.UID, PreviousGameState: previousState, PreviousMessage: previousMessage})
+			closePlayerRound(&g.Base, activePlayer, throwRound, sequence, []undo.Action{}, previousState, previousMessage)
 		}
 
 		// Check if game shot and handle win
@@ -256,8 +257,8 @@ func (g *CricketGame) Rematch(h *ws.Hub) error {
 	// Reset game state
 	g.Base.Message = ""
 	g.Base.GameState = "THROW"
-	g.Base.Podium = make([]string, 0)
-	g.Base.UndoLog = make([]undo.Undo, 0)
+	g.Base.Podium.ResetPodium()
+	g.Base.UndoLog.ClearLog()
 	g.Base.ActivePlayer = rg.Intn(len(g.Base.Player))
 	g.Base.ThrowRound = 1
 
@@ -275,9 +276,9 @@ func (g *CricketGame) Rematch(h *ws.Hub) error {
 		g.Base.Player[i].TotalThrowCount = 0
 	}
 
-	g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{
-		Sequence: 0,
-		Action:   "CREATEGAME",
+	sequence := g.Base.UndoLog.CreateSequence()
+	sequence.AddActionToSequence(undo.Action{
+		Action: "CREATEGAME",
 	})
 
 	// Update scoreboard
@@ -307,22 +308,30 @@ func (controller *CricketGameController) initRandom() *CricketGameController {
 	return controller
 }
 
-func scoreCut(g *CricketGame, points, index int, activeID string, allPlayer []player.Player, sequence int) {
+func scoreCut(g *CricketGame, points, index int, activeID string, allPlayer []player.Player, sequence *undo.Sequence) {
 	for i := range allPlayer {
 		if g.Base.Player[i].UID != activeID {
 			if !checkClosed(g.Base.Player[i].Score, index) {
 				g.Base.Player[i].Score.Score += points
-				g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "GAINPOINTS", Player: &g.Base.Player[i], Points: points})
+				sequence.AddActionToSequence(undo.Action{
+					Action: "GAINPOINTS",
+					Player: &g.Base.Player[i],
+					Points: points,
+				})
 			}
 		}
 	}
 
 }
 
-func scoreNormal(g *CricketGame, points, index int, player player.Player, sequence int) {
+func scoreNormal(g *CricketGame, points, index int, player player.Player, sequence *undo.Sequence) {
 	if checkClosed(player.Score, index) {
 		player.Score.Score += points
-		g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "GAINPOINTS", Player: &player, Points: points})
+		sequence.AddActionToSequence(undo.Action{
+			Action: "GAINPOINTS",
+			Player: &player,
+			Points: points,
+		})
 	}
 }
 
@@ -360,7 +369,7 @@ func checkWin(g *CricketGame) bool {
 	return true
 }
 
-func cricketWin(g *CricketGame, activePlayer *player.Player, sequence int, throwRound *throw.Round) {
+func cricketWin(g *CricketGame, activePlayer *player.Player, sequence *undo.Sequence, throwRound *throw.Round) {
 	previousMessage := g.Base.Message
 	previousState := g.Base.GameState
 
@@ -374,7 +383,13 @@ func cricketWin(g *CricketGame, activePlayer *player.Player, sequence int, throw
 	g.Base.Message = "Game shot!"
 
 	throwRound.Done = true
-	g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "DOWIN", GameID: g.Base.UID, PreviousGameState: previousState, PreviousMessage: previousMessage, Player: activePlayer})
+	sequence.AddActionToSequence(undo.Action{
+		Action:            "DOWIN",
+		GameID:            g.Base.UID,
+		PreviousGameState: previousState,
+		PreviousMessage:   previousMessage,
+		Player:            activePlayer,
+	})
 }
 
 // checkClosed will satisfy Score interface for Cricket

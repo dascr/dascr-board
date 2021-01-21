@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dascr/dascr-board/player"
+	"github.com/dascr/dascr-board/podium"
 	"github.com/dascr/dascr-board/score"
 	"github.com/dascr/dascr-board/throw"
 	"github.com/dascr/dascr-board/undo"
@@ -39,12 +40,12 @@ func (g *SplitGame) StartGame() error {
 		g.Base.Player[i].LastThrows = make([]throw.Throw, 3)
 	}
 
-	g.Base.Podium = make([]string, 0)
+	g.Base.Podium = &podium.Podium{}
 
-	g.Base.UndoLog = make([]undo.Undo, 0)
-	g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{
-		Sequence: 0,
-		Action:   "CREATEGAME",
+	g.Base.UndoLog = &undo.Log{}
+	sequence := g.Base.UndoLog.CreateSequence()
+	sequence.AddActionToSequence(undo.Action{
+		Action: "CREATEGAME",
 	})
 
 	return nil
@@ -67,34 +68,19 @@ func (g *SplitGame) NextPlayer(h *ws.Hub) {
 
 // RequestThrow will satisfy interface Game for game Split
 func (g *SplitGame) RequestThrow(number, modifier int, h *ws.Hub) error {
-	sequence := g.Base.UndoLog[len(g.Base.UndoLog)-1].Sequence + 1
-
+	sequence := g.Base.UndoLog.CreateSequence()
+	previousMessage := g.Base.Message
+	previousState := g.Base.GameState
 	points := number * modifier
 	activePlayer := &g.Base.Player[g.Base.ActivePlayer]
 
 	// Check game state
 	if g.Base.GameState == "THROW" {
-		// Check if ongoing round
-		ongoing := utils.CheckOngoingRound(activePlayer.ThrowRounds, g.Base.ThrowRound)
-		if !ongoing {
-			// If there is no round associated with the current throw round of the game
-			// create one
-			newRound := &throw.Round{
-				Round:  g.Base.ThrowRound,
-				Throws: []throw.Throw{},
-			}
-			activePlayer.ThrowRounds = append(activePlayer.ThrowRounds, *newRound)
-			g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CREATETHROWROUND", RoundNumber: newRound.Round, Player: activePlayer})
-		}
-		// Now add throw to that round or to the existing
-		throwRound := &activePlayer.ThrowRounds[g.Base.ThrowRound-1]
-		newThrow := &throw.Throw{
-			Number:   number,
-			Modifier: modifier,
-		}
+		// check if ongoing round else create
+		checkOngoingElseCreate(activePlayer, &g.Base, sequence)
 
-		throwRound.Throws = append(throwRound.Throws, *newThrow)
-		g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CREATETHROW", Player: activePlayer, RoundNumber: throwRound.Round})
+		// Add Throw to last round
+		throwRound := addThrowToCurrentRound(activePlayer, &g.Base, sequence, number, modifier)
 
 		// Check if variant steel and if we need to build up score
 		if g.Base.Variant == "steel" && g.Base.ThrowRound == 1 {
@@ -107,13 +93,7 @@ func (g *SplitGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 		// Also set gameState and perhaps increase game.Base.ThrowRound
 		// if everyone has already thrown to this round
 		if len(throwRound.Throws) == 3 {
-			previousMessage := g.Base.Message
-			previousState := g.Base.GameState
-			throwRound.Done = true
-			g.Base.GameState = "NEXTPLAYER"
-			g.Base.Message = "Remove Darts!"
-			g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "CLOSEPLAYERTHROWROUND", Player: activePlayer, RoundNumber: throwRound.Round, GameID: g.Base.UID, PreviousGameState: previousState, PreviousMessage: previousMessage})
-
+			closePlayerRound(&g.Base, activePlayer, throwRound, sequence, []undo.Action{}, previousState, previousMessage)
 			checkEndGame(&g.Base, sequence)
 		}
 
@@ -145,8 +125,8 @@ func (g *SplitGame) Rematch(h *ws.Hub) error {
 	// Reset game state
 	g.Base.Message = ""
 	g.Base.GameState = "THROW"
-	g.Base.Podium = make([]string, 0)
-	g.Base.UndoLog = make([]undo.Undo, 0)
+	g.Base.Podium.ResetPodium()
+	g.Base.UndoLog.ClearLog()
 	g.Base.ActivePlayer = rg.Intn(len(g.Base.Player))
 	g.Base.ThrowRound = 1
 
@@ -169,9 +149,9 @@ func (g *SplitGame) Rematch(h *ws.Hub) error {
 		g.Base.Player[i].LastThrows = make([]throw.Throw, 3)
 	}
 
-	g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{
-		Sequence: 0,
-		Action:   "CREATEGAME",
+	sequence := g.Base.UndoLog.CreateSequence()
+	sequence.AddActionToSequence(undo.Action{
+		Action: "CREATEGAME",
 	})
 
 	// Update scoreboard
@@ -181,73 +161,78 @@ func (g *SplitGame) Rematch(h *ws.Hub) error {
 }
 
 // This is to build score in steel variant
-func chargeupScore(g *SplitGame, player *player.Player, points, sequence int) {
+func chargeupScore(g *SplitGame, player *player.Player, points int, sequence *undo.Sequence) {
 	previousScore := player.Score.Score
 	player.Score.Score += points
-	g.Base.UndoLog = append(g.Base.UndoLog, undo.Undo{Sequence: sequence, Action: "UPDATESPLITSCORE", PreviousScore: previousScore, Player: player})
+	sequence.AddActionToSequence(undo.Action{
+		Action:        "UPDATESPLITSCORE",
+		PreviousScore: previousScore,
+		Player:        player,
+	})
 }
 
 // This is the logic to handle Split Game
-func splitLogic(g *SplitGame, player *player.Player, number, modifier, sequence int) {
+func splitLogic(g *SplitGame, player *player.Player, number, modifier int, sequence *undo.Sequence) {
 	rnd := g.Base.ThrowRound
 	if g.Base.Variant == "steel" {
 		// Decrease by one cause round 1 is to build up score
 		rnd--
 	}
+	points := number * modifier
 	// Switch over Throw round as this indicates what needs to be hit
 	switch rnd {
 	case 1:
 		// 15
 		if number == 15 {
-			chargeupScore(g, player, number*modifier, sequence)
+			chargeupScore(g, player, points, sequence)
 			player.Score.Split = false
 		}
 	case 2:
 		// 16
 		if number == 16 {
-			chargeupScore(g, player, number*modifier, sequence)
+			chargeupScore(g, player, points, sequence)
 			player.Score.Split = false
 		}
 	case 3:
 		// Double
 		if modifier == 2 {
-			chargeupScore(g, player, number*modifier, sequence)
+			chargeupScore(g, player, points, sequence)
 			player.Score.Split = false
 		}
 	case 4:
 		// 17
 		if number == 17 {
-			chargeupScore(g, player, number*modifier, sequence)
+			chargeupScore(g, player, points, sequence)
 			player.Score.Split = false
 		}
 	case 5:
 		// 18
 		if number == 18 {
-			chargeupScore(g, player, number*modifier, sequence)
+			chargeupScore(g, player, points, sequence)
 			player.Score.Split = false
 		}
 	case 6:
 		// Triple
 		if modifier == 3 {
-			chargeupScore(g, player, number*modifier, sequence)
+			chargeupScore(g, player, points, sequence)
 			player.Score.Split = false
 		}
 	case 7:
 		// 19
 		if number == 19 {
-			chargeupScore(g, player, number*modifier, sequence)
+			chargeupScore(g, player, points, sequence)
 			player.Score.Split = false
 		}
 	case 8:
 		// 20
 		if number == 20 {
-			chargeupScore(g, player, number*modifier, sequence)
+			chargeupScore(g, player, points, sequence)
 			player.Score.Split = false
 		}
 	case 9:
 		// 25
 		if number == 25 {
-			chargeupScore(g, player, number*modifier, sequence)
+			chargeupScore(g, player, points, sequence)
 			player.Score.Split = false
 		}
 	default:
@@ -261,7 +246,7 @@ func splitLogic(g *SplitGame, player *player.Player, number, modifier, sequence 
 	}
 }
 
-func checkAndSplit(base *BaseGame, player *player.Player, sequence int) {
+func checkAndSplit(base *BaseGame, player *player.Player, sequence *undo.Sequence) {
 	if base.Variant == "steel" && base.ThrowRound == 1 {
 		return
 	}
@@ -269,12 +254,16 @@ func checkAndSplit(base *BaseGame, player *player.Player, sequence int) {
 	if player.Score.Split {
 		previousScore := player.Score.Score
 		player.Score.Score = player.Score.Score / 2
-		base.UndoLog = append(base.UndoLog, undo.Undo{Sequence: sequence, Action: "UPDATESPLITSCORE", PreviousScore: previousScore, Player: player})
+		sequence.AddActionToSequence(undo.Action{
+			Action:        "UPDATESPLITSCORE",
+			PreviousScore: previousScore,
+			Player:        player,
+		})
 	}
 	player.Score.Split = true
 }
 
-func checkEndGame(base *BaseGame, sequence int) {
+func checkEndGame(base *BaseGame, sequence *undo.Sequence) {
 	// Game ends if every player has 9 throw rounds which are done in edart
 	// And 10 throw rounds which are done in steel dart
 	var threshold int
@@ -305,7 +294,12 @@ func checkEndGame(base *BaseGame, sequence int) {
 		previousMessage := base.Message
 
 		doWin(base)
-		base.UndoLog = append(base.UndoLog, undo.Undo{Sequence: sequence, Action: "DOWIN", GameID: base.UID, PreviousGameState: previousState, PreviousMessage: previousMessage})
+		sequence.AddActionToSequence(undo.Action{
+			Action:            "DOWIN",
+			GameID:            base.UID,
+			PreviousGameState: previousState,
+			PreviousMessage:   previousMessage,
+		})
 
 		// Construct winner output
 		highestScorePlayer := base.Player[0]
