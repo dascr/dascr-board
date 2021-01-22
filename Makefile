@@ -17,6 +17,11 @@ build-backend: clean-backend generate
 	@GOOS=linux GOARCH=386 go build -ldflags="-s -w" -o dist/linux_386/dascr-board
 	@echo "[*] Building for mac"
 	@GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o dist/darwin_amd64/dascr-board
+	@echo "[*] Building for arm"
+	@GOOS=linux GOARCH=arm GOARM=5 go build -ldflags="-s -w" -o dist/arm_5/dascr-board
+	@GOOS=linux GOARCH=arm GOARM=6 go build -ldflags="-s -w" -o dist/arm_6/dascr-board
+	@GOOS=linux GOARCH=arm GOARM=7 go build -ldflags="-s -w" -o dist/arm_7/dascr-board
+	@GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o dist/arm64_8/dascr-board
 	@echo "[OK] App binary was created!"
 	@echo "[OK] Your backend binary is at ./dist/<os>/"
 
