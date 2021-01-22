@@ -1,58 +1,27 @@
 <script>
     import { onMount } from 'svelte';
-    import api from '../../../utils/api';
-    import { transformGameMessage } from '../../../utils/methods';
     import ws from '../../../utils/socket';
     import { goto, url } from '@roxi/routify';
     import CricketCard from './CricketCard.svelte';
+    import state from '../../../utils/stores/stateStore';
+    import { setCricketModeHeader } from '../../../utils/methods';
 
     export let gameid;
-    let gameData = {};
-    let players = [];
-    let activePlayer = {};
     let mode = '';
     let randomGhost = '';
-
-    const setModeHeader = (gameData) => {
-        switch (gameData.Variant) {
-            case 'cut':
-                mode = 'Cut Throat';
-                break;
-            case 'normal':
-                mode = 'Normal';
-                break;
-            case 'no':
-                mode = 'No Score';
-                break;
-        }
-
-        if (gameData.CricketController.Ghost) {
-            randomGhost = 'Yes / Yes';
-        } else if (gameData.CricketController.Random) {
-            randomGhost = 'Yes / No';
-        } else {
-            randomGhost = 'No / No';
-        }
-    };
-
-    const update = async () => {
-        const res = await api.get(`game/${gameid}/display`);
-        gameData = await res.json();
-        players = gameData.Player;
-        activePlayer = gameData.Player[gameData.ActivePlayer];
-        gameData.Message = transformGameMessage(gameData, activePlayer);
-    };
 
     onMount(async () => {
         // init websocket
         const socket = ws.init(gameid, 'Cricket Scoreboard');
 
-        await update();
+        await state.updateState(gameid);
 
-        setModeHeader(gameData);
+        const res = setCricketModeHeader($state.gameData);
+        mode = res[0];
+        randomGhost = res[1];
 
-        socket.addEventListener('update', () => {
-            update();
+        socket.addEventListener('update', async () => {
+            await state.updateState(gameid);
         });
 
         socket.addEventListener('redirect', () => {
@@ -66,7 +35,7 @@
     <p
         class="text-center border w-1/4 font-bold text-lg rounded-tl-2xl p-2 capitalize">
         Game:
-        {gameData.Game}
+        {$state.gameData.Game}
     </p>
     <p class="text-center border w-1/4 font-bold text-lg p-2">Mode: {mode}</p>
     <p class="text-center border w-1/4 font-bold text-lg p-2">
@@ -75,26 +44,26 @@
     </p>
     <p class="text-center border w-1/4 font-bold text-lg rounded-tr-2xl p-2">
         Round:
-        {gameData.ThrowRound}
+        {$state.gameData.ThrowRound}
     </p>
 </div>
 
 <div class="bg-black bg-opacity-30 rounded-b-2xl overflow-hidden">
     <p
         class="text-center border w-full font-extrabold text-4xl rounded-b-2xl p-2">
-        {gameData.Message}
+        {$state.message}
     </p>
 </div>
 
 <div class="mt-3">
     <div class="flex flex-wrap max-w-full">
         <!-- Player cols -->
-        {#each players as player, i}
+        {#each $state.players as player, i}
             <div class="w-72 mx-2 my-2">
                 <CricketCard
                     {player}
-                    {gameData}
-                    active={i === gameData.ActivePlayer} />
+                    gameData={$state.gameData}
+                    active={i === $state.gameData.ActivePlayer} />
             </div>
         {/each}
     </div>

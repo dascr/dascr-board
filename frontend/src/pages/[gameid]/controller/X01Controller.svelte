@@ -1,41 +1,27 @@
 <script>
     import { goto, url } from '@roxi/routify';
     import { onMount } from 'svelte';
-    import api from '../../../utils/api';
     import ws from '../../../utils/socket';
-    import {
-        transformGameMessage,
-        scoreOrPodium,
-    } from '../../../utils/methods';
+    import { scoreOrPodium } from '../../../utils/methods';
     import TwentyFiveGrid from './inputs/TwentyFiveGrid.svelte';
     import ControllerHeader from './ControllerHeader.svelte';
+    import state from '../../../utils/stores/stateStore';
 
     export let gameid;
     let apiBaseURL = 'API_BASE';
-    let gameData = {};
-    let players = [];
-    let activePlayer = {};
-
-    const update = async () => {
-        const res = await api.get(`game/${gameid}/display`);
-        gameData = await res.json();
-        players = gameData.Player;
-        activePlayer = gameData.Player[gameData.ActivePlayer];
-        gameData.Message = transformGameMessage(gameData, activePlayer);
-    };
 
     onMount(async () => {
         // init websocket
         const socket = ws.init(gameid, 'X01 Controller');
 
-        update();
+        await state.updateState(gameid);
 
         socket.addEventListener('redirect', () => {
             $goto($url(`/${gameid}/game`));
         });
 
-        socket.addEventListener('update', () => {
-            update();
+        socket.addEventListener('update', async () => {
+            await state.updateState(gameid);
         });
     });
 </script>
@@ -48,25 +34,25 @@
 </style>
 
 <!-- Header with buttons, game mode and message row -->
-<ControllerHeader {gameid} {gameData}>
+<ControllerHeader {gameid} gameData={$state.gameData}>
     <div
         slot="headerData"
         class="flex flex-row mx-auto bg-black bg-opacity-30 overflow-hidden">
         <p class="text-center border w-1/4 font-bold text-lg p-2 capitalize">
             Game:
-            {gameData.Game}
+            {$state.gameData.Game}
         </p>
         <p class="text-center border w-1/4 font-bold text-lg p-2 capitalize">
             In:
-            {gameData.In}
+            {$state.gameData.In}
         </p>
         <p class="text-center border w-1/4 font-bold text-lg p-2 capitalize">
             Out:
-            {gameData.Out}
+            {$state.gameData.Out}
         </p>
         <p class="text-center border w-1/4 font-bold text-lg p-2">
             Round:
-            {gameData.ThrowRound}
+            {$state.gameData.ThrowRound}
         </p>
     </div>
 </ControllerHeader>
@@ -106,10 +92,10 @@
         </tr>
     </thead>
     <tbody>
-        {#each players as player, i}
+        {#each $state.players as player, i}
             <tr
                 class="text-center flex-none"
-                class:active={i === gameData.ActivePlayer}>
+                class:active={i === $state.gameData.ActivePlayer}>
                 <td>
                     <img
                         src={`${apiBaseURL}${player.Image}`}
@@ -125,7 +111,7 @@
                 </td>
                 <td
                     class="px-3 border-r border-l border-dashed border-opacity-10">
-                    {scoreOrPodium(player, gameData)}
+                    {scoreOrPodium(player, $state.gameData)}
                 </td>
                 <td
                     class="px-3 border-r border-l border-dashed border-opacity-10">

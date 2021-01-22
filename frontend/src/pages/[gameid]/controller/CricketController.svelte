@@ -1,7 +1,6 @@
 <script>
-    import api from '../../../utils/api';
     import {
-        transformGameMessage,
+        setCricketModeHeader,
         scoreOrPodium,
     } from '../../../utils/methods';
     import { onMount } from 'svelte';
@@ -9,61 +8,28 @@
     import { goto, url } from '@roxi/routify';
     import ControllerHeader from './ControllerHeader.svelte';
     import CricketGrid from './inputs/CricketGrid.svelte';
-
-    const checker = (arr) => arr.every((v) => v === true);
+    import state from '../../../utils/stores/stateStore';
 
     export let gameid;
     let apiBaseURL = 'API_BASE';
-    let gameData = {};
-    let players = [];
-    let numbers = [];
-    let revealed = [];
-    let allRevealed = false;
-    let activePlayer = {};
     let mode = '';
     let randomGhost = '';
-
-    const update = async () => {
-        const res = await api.get(`game/${gameid}/display`);
-        gameData = await res.json();
-        players = gameData.Player;
-        activePlayer = gameData.Player[gameData.ActivePlayer];
-        numbers = gameData.CricketController.Numbers;
-        revealed = gameData.CricketController.NumberRevealed;
-        gameData.Message = transformGameMessage(gameData, activePlayer);
-
-        switch (gameData.Variant) {
-            case 'cut':
-                mode = 'Cut Throat';
-                break;
-            case 'normal':
-                mode = 'Normal';
-                break;
-            case 'no':
-                mode = 'No Score';
-                break;
-        }
-
-        if (gameData.CricketController.Ghost) {
-            randomGhost = 'Yes / Yes';
-        } else if (gameData.CricketController.Random) {
-            randomGhost = 'Yes / No';
-        } else {
-            randomGhost = 'No / No';
-        }
-
-        // Check if all are revealed
-        allRevealed = checker(revealed);
-    };
 
     onMount(async () => {
         // init websocket
         const socket = ws.init(gameid, 'Cricket Controller');
 
-        await update();
+        await state.updateState(gameid);
 
-        socket.addEventListener('update', () => {
-            update();
+        const res = setCricketModeHeader($state.gameData);
+        mode = res[0];
+        randomGhost = res[1];
+
+        // allRevealed = checker(revealed);
+
+        socket.addEventListener('update', async () => {
+            await state.updateState(gameid);
+            allRevealed = checker(revealed);
         });
 
         socket.addEventListener('redirect', () => {
@@ -80,13 +46,13 @@
 </style>
 
 <!-- Header with buttons, game mode and message row -->
-<ControllerHeader {gameid} {gameData}>
+<ControllerHeader {gameid} gameData={$state.gameData}>
     <div
         slot="headerData"
         class="flex flex-row mx-auto bg-black bg-opacity-30 overflow-hidden">
         <p class="text-center border w-1/4 font-bold text-lg p-2 capitalize">
             Game:
-            {gameData.Game}
+            {$state.gameData.Game}
         </p>
         <p class="text-center border w-1/4 font-bold text-lg p-2">
             Mode:
@@ -98,7 +64,7 @@
         </p>
         <p class="text-center border w-1/4 font-bold text-lg p-2">
             Round:
-            {gameData.ThrowRound}
+            {$state.gameData.ThrowRound}
         </p>
     </div>
 </ControllerHeader>
@@ -114,9 +80,9 @@
             <td class="border-l border-r border-dashed font-bold px-3">
                 Points
             </td>
-            {#each numbers as num, i}
+            {#each $state.numbers as num, i}
                 <td class="border-l border-r border-dashed font-bold px-3">
-                    {#if revealed[i]}{num}{:else}?{/if}
+                    {#if $state.revealed[i]}{num}{:else}?{/if}
                 </td>
             {/each}
             <td
@@ -137,10 +103,10 @@
         </tr>
     </thead>
     <tbody>
-        {#each players as player, i}
+        {#each $state.players as player, i}
             <tr
                 class="text-center flex-none"
-                class:active={i === gameData.ActivePlayer}>
+                class:active={i === $state.gameData.ActivePlayer}>
                 <td>
                     <img
                         src={`${apiBaseURL}${player.Image}`}
@@ -156,7 +122,7 @@
                 </td>
                 <td
                     class="px-3 border-r border-l border-dashed border-opacity-10">
-                    {scoreOrPodium(player, gameData)}
+                    {scoreOrPodium(player, $state.gameData)}
                 </td>
                 {#each player.Score.Numbers as num}
                     <td
@@ -191,4 +157,8 @@
 </table>
 
 <!-- Input controls -->
-<CricketGrid {gameid} {revealed} {numbers} {allRevealed} />
+<CricketGrid
+    {gameid}
+    revealed={$state.revealed}
+    numbers={$state.numbers}
+    allRevealed={$state.allRevealed} />

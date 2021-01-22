@@ -13,6 +13,8 @@ import (
 var (
 	db  *sql.DB
 	err error
+	// Debug will hold global debug flag
+	Debug bool = false
 )
 
 func main() {
@@ -29,7 +31,13 @@ func main() {
 		logger.Panicf("Unable to create database: %+v", err)
 	}
 
+	// API Config
+	APIConfig := &config.APIConfig{
+		IP:   config.MustGet("API_IP"),
+		Port: config.MustGet("API_PORT"),
+	}
+
 	// Setup API
-	a := api.SetupAPI(db)
+	a := api.SetupAPI(db, APIConfig)
 	a.Start()
 }

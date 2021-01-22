@@ -123,3 +123,30 @@ export const miss = (gameid) => {
     api.post(`game/${gameid}/throw/0/1`);
     navigator.vibrate(200);
 };
+
+export const setCricketModeHeader = (gameData) => {
+    let mode = '';
+    let randomGhost = '';
+
+    switch (gameData.Variant) {
+        case 'cut':
+            mode = 'Cut Throat';
+            break;
+        case 'normal':
+            mode = 'Normal';
+            break;
+        case 'no':
+            mode = 'No Score';
+            break;
+    }
+
+    if (gameData.CricketController.Ghost) {
+        randomGhost = 'Yes / Yes';
+    } else if (gameData.CricketController.Random) {
+        randomGhost = 'Yes / No';
+    } else {
+        randomGhost = 'No / No';
+    }
+
+    return [mode, randomGhost];
+};

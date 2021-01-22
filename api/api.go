@@ -19,7 +19,7 @@ type API struct {
 }
 
 // SetupAPI will instantiate an API and return it
-func SetupAPI(db *sql.DB) *API {
+func SetupAPI(db *sql.DB, APIConfig *config.APIConfig) *API {
 	// Setup Websocket hub
 	hub := ws.Hub{
 		Broadcast:  make(chan ws.Message),
@@ -30,12 +30,13 @@ func SetupAPI(db *sql.DB) *API {
 	go hub.Run()
 
 	return &API{
-		APIConfig: &config.APIConfig{
-			IP:   config.MustGet("API_IP"),
-			Port: config.MustGet("API_PORT"),
-		},
-		DB:  db,
-		Hub: &hub,
+		// APIConfig: &config.APIConfig{
+		// 	IP:   config.MustGet("API_IP"),
+		// 	Port: config.MustGet("API_PORT"),
+		// },
+		APIConfig: APIConfig,
+		DB:        db,
+		Hub:       &hub,
 	}
 }
 

@@ -10,6 +10,9 @@ const store = () => {
         players: [],
         activePlayer: {},
         message: '',
+        numbers: [],
+        revealed: [],
+        allRevealed: false,
     };
 
     const { subscribe, set, update } = writable(state);
@@ -30,16 +33,28 @@ const store = () => {
             });
         },
         async updateState(gameid) {
-            update(async (state) => {
-                const res = await api.get(`game/${gameid}/display`);
-                state.gameData = await res.json();
-                state.players = state.gameData.Player;
-                state.activePlayer =
-                    state.gameData.Player[state.gameData.ActivePlayer];
-                state.message = transformGameMessage(
-                    state.gameData,
-                    state.activePlayer
-                );
+            const res = await api.get(`game/${gameid}/display`);
+            const data = await res.json();
+            const players = data.Player;
+            const activePlayer = data.Player[data.ActivePlayer];
+            if (data.CricketController !== null) {
+                const numbers = data.CricketController.Numbers;
+                const revealed = data.CricketController.NumberRevealed;
+                const allRevealed = revealed.every((n) => n === true);
+                update((state) => {
+                    state.numbers = numbers;
+                    state.revealed = revealed;
+                    state.allRevealed = allRevealed;
+                    return state;
+                });
+            }
+            const transformMessage = transformGameMessage(data, activePlayer);
+            update((state) => {
+                state.gameData = data;
+                state.players = players;
+                state.activePlayer = activePlayer;
+                state.message = transformMessage;
+                return state;
             });
         },
     };
