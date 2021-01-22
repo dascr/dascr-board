@@ -1,0 +1,27 @@
+version: '3.9'
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - API_IP=0.0.0.0
+      - API_PORT=8000
+    networks:
+      - dascr
+  frontend:
+    depends_on:
+      - backend
+    build: ./frontend/
+    ports:
+      - "5000:5000"
+    environment:
+      - API_BASE=http://localhost:8000/
+      - API_URL=http://localhost:8000/api
+      - WS_URL=ws://localhost:8000/ws
+    networks:
+      - dascr
+
+networks:
+  dascr:
+    name: dascr

@@ -9,7 +9,7 @@
     "url": "https://github.com/dascr/dascr-board"
   },
   "scripts": {
-    "build": "rollup -c",
+    "build": "routify -b && rollup -c",
     "dev": "run-p routify rollup",
     "dev-expose": "run-p routify rollup-expose",
     "routify": "routify",
