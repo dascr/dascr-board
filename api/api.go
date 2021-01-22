@@ -30,10 +30,6 @@ func SetupAPI(db *sql.DB, APIConfig *config.APIConfig) *API {
 	go hub.Run()
 
 	return &API{
-		// APIConfig: &config.APIConfig{
-		// 	IP:   config.MustGet("API_IP"),
-		// 	Port: config.MustGet("API_PORT"),
-		// },
 		APIConfig: APIConfig,
 		DB:        db,
 		Hub:       &hub,
