@@ -10,16 +10,8 @@
 
     export let revealed, numbers, allRevealed, gameid;
 
-    let double;
-    let triple;
-
-    $: {
-        double = $state.double;
-        triple = $state.triple;
-    }
-
     const sendThrow = (number) => {
-        insertThrow(gameid, number, double, triple);
+        insertThrow(gameid, number, $state.double, $state.triple);
         $state.double = false;
         $state.triple = false;
     };
@@ -49,7 +41,7 @@
             {:else}
                 <button
                     class="text-2xl font-extrabold p-7 bg-black bg-opacity-30 hover:bg-opacity-50 border text-center rounded focus:outline-none"
-                    disabled={numbers[i] === 25 && triple}
+                    disabled={numbers[i] === 25 && $state.triple}
                     on:click={() => {
                         sendThrow(numbers[i]);
                     }}>{numbers[i]}</button>
@@ -65,11 +57,11 @@
             on:click={() => miss(gameid)}>0</button>
         <button
             class="text-2xl font-extrabold p-7 bg-black bg-opacity-30 hover:bg-opacity-50 border text-center rounded focus:outline-none"
-            class:active={double}
+            class:active={$state.double}
             on:click={state.toggleDouble}>Double</button>
         <button
             class="text-2xl font-extrabold p-7 bg-black bg-opacity-30 hover:bg-opacity-50 border text-center rounded focus:outline-none"
-            class:active={triple}
+            class:active={$state.triple}
             on:click={state.toggleTriple}>Triple</button>
         <button
             class="text-2xl font-extrabold p-7 bg-black bg-opacity-30 hover:bg-opacity-50 border text-center rounded focus:outline-none"

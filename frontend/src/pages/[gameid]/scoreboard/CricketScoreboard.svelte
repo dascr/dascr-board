@@ -13,13 +13,7 @@
     let mode = '';
     let randomGhost = '';
 
-    const update = async () => {
-        const res = await api.get(`game/${gameid}/display`);
-        gameData = await res.json();
-        players = gameData.Player;
-        activePlayer = gameData.Player[gameData.ActivePlayer];
-        gameData.Message = transformGameMessage(gameData, activePlayer);
-
+    const setModeHeader = (gameData) => {
         switch (gameData.Variant) {
             case 'cut':
                 mode = 'Cut Throat';
@@ -41,11 +35,21 @@
         }
     };
 
+    const update = async () => {
+        const res = await api.get(`game/${gameid}/display`);
+        gameData = await res.json();
+        players = gameData.Player;
+        activePlayer = gameData.Player[gameData.ActivePlayer];
+        gameData.Message = transformGameMessage(gameData, activePlayer);
+    };
+
     onMount(async () => {
         // init websocket
         const socket = ws.init(gameid, 'Cricket Scoreboard');
 
-        update();
+        await update();
+
+        setModeHeader(gameData);
 
         socket.addEventListener('update', () => {
             update();
@@ -88,17 +92,9 @@
         {#each players as player, i}
             <div class="w-72 mx-2 my-2">
                 <CricketCard
-                    name={player.Name}
-                    nickname={player.Nickname}
-                    image={player.Image}
-                    active={i === gameData.ActivePlayer}
-                    numbers={player.Score.Numbers}
-                    playerClosed={player.Score.Closed}
-                    lastThree={player.LastThrows}
-                    points={gameData.Podium.includes(player.UID) ? 'Place ' + (gameData.Podium.indexOf(player.UID) + 1) : 'Points: ' + player.Score.Score}
-                    closedNumbers={gameData.CricketController.NumberClosed}
-                    cricketNumbers={gameData.CricketController.Numbers}
-                    numberRevealed={gameData.CricketController.NumberRevealed} />
+                    {player}
+                    {gameData}
+                    active={i === gameData.ActivePlayer} />
             </div>
         {/each}
     </div>

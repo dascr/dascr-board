@@ -2,10 +2,14 @@
     import { goto, url } from '@roxi/routify';
     import { onMount } from 'svelte';
     import ws from '../../../utils/socket';
-    import { scoreOrCurrentNumber } from '../../../utils/methods';
+    import {
+        scoreOrCurrentNumber,
+        transformGameMessage,
+    } from '../../../utils/methods';
     import SiDoTrMiGrid from './inputs/SiDoTrMiGrid.svelte';
     import ControllerHeader from './ControllerHeader.svelte';
-    import stateStore from '../../../utils/stores/stateStore';
+    import api from '../../../utils/api';
+    // import state from '../../../utils/stores/stateStore';
 
     export let gameid;
     let apiBaseURL = 'API_BASE';
@@ -13,32 +17,34 @@
     let players = [];
     let activePlayer = {};
 
-    $: {
-        gameData = $stateStore.gameData;
-        players = $stateStore.players;
-        activePlayer = $stateStore.activePlayer;
-    }
+    // $: {
+    //     gameData = $stateStore.gameData;
+    //     players = $stateStore.players;
+    //     activePlayer = $stateStore.activePlayer;
+    // }
 
-    // const update = async () => {
-    //     const res = await api.get(`game/${gameid}/display`);
-    //     gameData = await res.json();
-    //     players = gameData.Player;
-    //     activePlayer = gameData.Player[gameData.ActivePlayer];
-    //     gameData.Message = transformGameMessage(gameData, activePlayer);
-    // };
+    const update = async () => {
+        const res = await api.get(`game/${gameid}/display`);
+        gameData = await res.json();
+        players = gameData.Player;
+        activePlayer = gameData.Player[gameData.ActivePlayer];
+        gameData.Message = transformGameMessage(gameData, activePlayer);
+    };
 
     onMount(async () => {
         // init websocket
         const socket = ws.init(gameid, 'ATC Controller');
 
-        await stateStore.updateState(gameid);
+        // await state.updateState(gameid);
+        update();
 
         socket.addEventListener('redirect', () => {
             $goto($url(`/${gameid}/game`));
         });
 
         socket.addEventListener('update', async () => {
-            await stateStore.updateState(gameid);
+            // await state.updateState(gameid);
+            update();
         });
     });
 </script>
