@@ -8,7 +8,7 @@ ENV GO111MODULE=on
 ENV CGO_ENABLED=1
 ENV GOOS=linux
 ENV GOARCH=amd64
-ENV API_IP=127.0.0.1
+ENV API_IP=0.0.0.0
 ENV API_PORT=8000
 
 # Move to working directory /build
@@ -31,6 +31,8 @@ WORKDIR /dist
 
 # Copy binary from build to main folder
 RUN cp /build/dascr-board .
+
+EXPOSE 8000
 
 # Command to run when starting the container
 CMD ["/dist/dascr-board"]

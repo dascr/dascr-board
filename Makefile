@@ -2,16 +2,7 @@ include .env
 include frontend/.env
 export
 
-.PHONY: build
-
-generate:
-	@echo "[*] Embedding via parcello"
-	@PARCELLO_RESOURCE_DIR=./static go generate ./...
-	@echo "[OK] Done bundeling things"
-
-download:
-	@echo "[*] go mod dowload"
-	@go mod download
+.PHONY:
 
 build-linux_64: generate download
 	@echo "[*] Building for linux x64"
@@ -30,14 +21,6 @@ build-mac: generate download
 	@CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o dist/darwin_amd64/dascr-board
 	@echo "[OK] App binary was created!"
 	@echo "[OK] Your backend binary is at ./dist/<os>/"
-
-build-windows_64: generate download
-	@echo "[*] Building for windows x64"
-	@CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o dist/windows_amd64/dascr-board.exe
-
-build-windows_32: generate download
-	@echo "[*] Building for windows x32"
-	@CGO_ENABLED=1 GOOS=windows GOARCH=386 go build -ldflags="-s -w" -o dist/windows_386/dascr-board.exe
 
 build-armv5: generate download
 	@echo "[*] Building for armv5"
@@ -70,6 +53,15 @@ build-frontend: clean-frontend
 	@rm ./frontend/public/build/*.map
 	@echo "[OK] Svelte App was built"
 	@echo "[OK] Serve content of ./frontend/public via a webserver"
+
+generate:
+	@echo "[*] Embedding via parcello"
+	@PARCELLO_RESOURCE_DIR=./static go generate ./...
+	@echo "[OK] Done bundeling things"
+
+download:
+	@echo "[*] go mod dowload"
+	@go mod download
 
 clean-backend:
 	@echo "[*] Cleanup Backend App"

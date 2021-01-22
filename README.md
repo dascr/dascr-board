@@ -5,26 +5,20 @@ It will handle darts games and keep the score. That's its basic function. Detail
 
 # Installation
 
-Right now only linux installation is described here. You might adapt it to Windows or Mac. Just be sure to set the env variables before running.
+DaSCR - Board should work for multiple operating systems. I develop and test on linux but it should basically compile on any os `gcc` and `go` is running on.
 
-To install and use you will need a running go environment already setup. Also to build the frontend you will need `node` and `yarn` running.
+## Basic requirements
+
+You need go and gcc as mentioned and you are better off installing `git` as well. Then do:
 
 ```bash
 git clone https://github.com/dascr/dascr-board
-cd dascr-board/frontend
-yarn install
-cd ..
-go mod download
+cd dascr-board
 ```
 
-Next you will need two .env files to use the provided `Makefile`.
+## Building the frontend
 
-**.env in root folder of dascr-board**:
-```bash
-API_IP=0.0.0.0
-API_PORT=8000
-DEBUG=TRUE // or false if you do not want to have a lot of output
-```
+Before building the frontend you will need to provide a file called `.env` in folder `./frontend/` as this will be integrated while building.
 
 **.env in frontend folder**
 ```bash
@@ -33,11 +27,68 @@ API_URL=http://localhost:8000/api
 WS_URL=ws://localhost:8000/ws
 ```
 
-This needs to point to the API accordingly and it should use the ip addresses of the deployment scenarion already (also see Deployment below).
+This file will tell the frontend where to look for the backend api. Remember you need to provide this information at build time. So if the location of the backend changes (another ip or url) you need to rebuild the app.
 
-You then need to run `make generate` once to embed the static files using parcello.
+To build the frontend you will also need `node` and `yarn` (you could use npm, but Makefile is designed to use yarn, as I am using it).
 
-Then you can either run two terminals with
+Then you do:
+
+```bash
+make build-frontend
+```
+
+This should result in `./frontend/public/` having a build folder. You are now ready to serve the frontend from public folder via a webserver or run `make run-dev-frontend` for running it via the development server.
+
+## Building the backend
+
+I have the following build targets:
+
+- build-linux_64
+- build-linux_386
+- build-mac
+- build-armv5
+- build-armv6
+- build-armv7
+- build-armv8_64
+
+So in my arch linux Installation I do:
+
+```bash
+make build-linux_x64
+```
+
+This will result in a file `./dist/linux_amd64/dascr-board`.
+
+### Windows
+
+In Windows you can also build this project. I tested it using MSYS2. After installing this I followed this instructions [https://gist.github.com/V0idExp/604c61cb7fd1bbcba8142ac94c184f20](https://gist.github.com/V0idExp/604c61cb7fd1bbcba8142ac94c184f20) to setup my MSYS2 environment.
+
+After setting up accordingly you can build like (from root directory of project within MSYS2 cli):
+
+```bash
+go mod download
+go generate
+go build -o dist/windows_amd64/dascr-board.exe
+```
+
+## Running it
+
+You will also need to provide at least two environment variables to run the app. Those are `API_IP` and `API_PORT`. The app will use these to setup the server.
+
+In Linux you can run the app like so:
+
+```bash
+API_IP=0.0.0.0 API_PORT=8000 ./dascr-board
+```
+
+There is also the env variable `DEBUG=TRUE` if you want to see more logging output.
+
+I did not find a way yet to run an App with custom env variables in Windows, yet.
+
+# Developing
+
+When providing an .env file, both in root directory and in frontend directory you can run those from Makefile with:
+
 ```bash
 make run-dev-backend
 ```
@@ -45,7 +96,23 @@ and
 ```bash
 make run-dev-frontend
 ```
-to run the development version right off the bat or you can build the project with `make build-all` to build the backend executable and to bundle the release of the frontend.
+
+# Docker
+
+You can build and run the two services with docker, too. I provided a Dockerfile each.
+
+So in root you can run `docker build . -t dascr-board-backend` and in the folder *frontend* you can run `docker build . -t dascr-board-frontend` to build those two services.
+
+Afterwards you can run them. Be sure to put them on the same network and to expose port `5000` on the frontend container to be able to interact with it.
+
+If you want to add some recognition software to the mix you will have to expose the API on backend container on port `8000` as well.
+
+To make this easy for you I also designed a docker-compose file. You can run all of this by doing:
+
+```bash
+docker network create dascr
+docker-compose up
+```
 
 # Usage
 When running you need to navigate your browser to `http://ip:port` of the frontend. Basically everything there is explained in detail. But in short you need to create player and then you need two browser windows. One is pointing at `http://ip:port/<gameid>/start`. There the scoreboard will be shown after starting a game. To start a game and input data you point your browser to `http://ip:port/<gameid>/game`.
@@ -133,7 +200,7 @@ SyslogIdentifier=dascr-board
 WantedBy=multi-user.target
 ```
 
-`/var/lib/dascr-board` is the executable resulting from `make build-all` found in `./dist` folder.
+`/var/lib/dascr-board` is the executable resulting from `make` found in `./dist` folder.
 
 When building my frontend I made sure to have my .env to point to my domain instead of a local ip address. This way the clients browser later knows where to fetch the data from API:
 
@@ -145,6 +212,7 @@ WS_URL=wss://example.com/ws
 ```
 
 Also make sure to choose the right protocol here. Caddy server automatically uses https and therefore also *wss* is used instead of *ws*.
+
 
 # API
 
