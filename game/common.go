@@ -108,8 +108,8 @@ func getLastThreeThrows(player *player.Player, base *BaseGame) *player.Player {
 	player.LastThrows = make([]throw.Throw, 0)
 	lastThreeSum := 0
 	if len(player.ThrowRounds) > 0 {
-		if len(player.ThrowRounds[base.ThrowRound-1].Throws) != 0 {
-			for _, thr := range player.ThrowRounds[base.ThrowRound-1].Throws {
+		if len(player.ThrowRounds[len(player.ThrowRounds)-1].Throws) != 0 {
+			for _, thr := range player.ThrowRounds[len(player.ThrowRounds)-1].Throws {
 				player.LastThrows = append(player.LastThrows, thr)
 				lastThreeSum += thr.Number * thr.Modifier
 			}
@@ -305,14 +305,21 @@ func switchToNextPlayer(base *BaseGame, h *ws.Hub) {
 		// Update scoreboard
 		utils.WSSendUpdate(base.UID, h)
 
-		// Check if to increase game.ThrowRound
-		if roundDone := utils.CheckRoundDone(base.Player, base.ThrowRound, base.Podium.GetPodium()); roundDone {
-			base.ThrowRound++
-			sequence.AddActionToSequence(undo.Action{
-				Action: "INCREASETHROWROUND",
-				GameID: base.UID,
-			})
-		}
+		// Check if throw round done by all players and increase
+		checkRoundDone(base, sequence)
+	}
+}
+
+// This will check if the round is done and increase overall
+// Throw round
+func checkRoundDone(base *BaseGame, sequence *undo.Sequence) {
+	// Check if to increase game.ThrowRound
+	if roundDone := utils.CheckRoundDone(base.Player, base.ThrowRound, base.Podium.GetPodium()); roundDone {
+		base.ThrowRound++
+		sequence.AddActionToSequence(undo.Action{
+			Action: "INCREASETHROWROUND",
+			GameID: base.UID,
+		})
 	}
 }
 
@@ -323,6 +330,25 @@ func triggerUndo(base *BaseGame, h *ws.Hub) error {
 		sequence, err := base.UndoLog.GetLastSequence()
 		if err != nil {
 			return err
+		}
+
+		for _, a := range sequence.Action {
+			if a.Action == "CREATETHROWROUND" {
+				// look if there is CREATETHROWROUND in sequence
+				// if so resort and put it last as otherwise
+				// undo will be rendered unusable
+
+				// park CREATETHROWROUND
+				parkAction := sequence.Action[0]
+
+				// remove CREATETHROWROUND from sequence
+				sequence.Action = sequence.Action[1:]
+
+				// add CREATETHROWROUND at the end
+				sequence.Action = append(sequence.Action, parkAction)
+
+				break
+			}
 		}
 
 		for _, a := range sequence.Action {

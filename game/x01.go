@@ -103,6 +103,7 @@ func (g *X01Game) RequestThrow(number, modifier int, h *ws.Hub) error {
 
 		// Update scoreboard
 		utils.WSSendUpdate(g.Base.UID, h)
+
 		return nil
 	}
 

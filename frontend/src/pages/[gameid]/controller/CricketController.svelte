@@ -29,7 +29,6 @@
 
         socket.addEventListener('update', async () => {
             await state.updateState(gameid);
-            allRevealed = checker(revealed);
         });
 
         socket.addEventListener('redirect', () => {

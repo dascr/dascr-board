@@ -79,9 +79,7 @@ func (g *ATCGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 				increaseNumberByOne(g, throwRound, activePlayer, sequence)
 				break
 			case "fast":
-				for i := 0; i < modifier; i++ {
-					increaseNumberByOne(g, throwRound, activePlayer, sequence)
-				}
+				increaseNumberByMod(g, throwRound, activePlayer, sequence, modifier)
 				break
 			default:
 				break
@@ -158,6 +156,28 @@ func increaseNumberByOne(game *ATCGame, throwRound *throw.Round, p *player.Playe
 		p.Score.CurrentNumber++
 	} else {
 		p.Score.CurrentNumber = 25
+	}
+	sequence.AddActionToSequence(undo.Action{
+		Action:              "ATCINCREASENUMBER",
+		GameID:              game.Base.UID,
+		Player:              p,
+		PreviousNumberToHit: previousNumberToHit,
+	})
+}
+
+// increase active player number += modifier
+// will go from 20 to 25
+// will go from 25 to win
+func increaseNumberByMod(game *ATCGame, throwRound *throw.Round, p *player.Player, sequence *undo.Sequence, modifier int) {
+	previousNumberToHit := p.Score.CurrentNumber
+	for i := 0; i < modifier; i++ {
+		if p.Score.CurrentNumber == 25 {
+			atcwin(game, throwRound, p, sequence)
+		} else if p.Score.CurrentNumber != 20 {
+			p.Score.CurrentNumber++
+		} else {
+			p.Score.CurrentNumber = 25
+		}
 	}
 	sequence.AddActionToSequence(undo.Action{
 		Action:              "ATCINCREASENUMBER",
