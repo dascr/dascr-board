@@ -7,6 +7,17 @@ It will handle darts games and keep the score. That's its basic function. Detail
 
 DaSCR - Board should work for multiple operating systems. I develop and test on linux but it should basically compile on any os `gcc` and `go` is running on.
 
+## Create required files
+
+You will need to create a *.env* file each in the root directory and in the frontend directory if you plan to use the Makefile as described below.
+
+For the start it is enough to just create them as empty file from the root directory of the project like:
+
+```bash
+touch .env
+touch frontend/.env
+```
+
 ## Basic requirements
 
 You need go and gcc as mentioned and you are better off installing `git` as well. Then do:
@@ -87,7 +98,15 @@ I did not find a way yet to run an App with custom env variables in Windows, yet
 
 # Developing
 
-When providing an .env file, both in root directory and in frontend directory you can run those from Makefile with:
+When providing an .env file, both in root directory and in frontend directory you can run those from Makefile with. The .env file in the root directory for example might look like this:
+
+```bash
+API_IP=0.0.0.0
+API_PORT=8000
+DEBUG=TRUE
+```
+
+Then you can run the development server like this from two seperate terminals
 
 ```bash
 make run-dev-backend
@@ -96,6 +115,8 @@ and
 ```bash
 make run-dev-frontend
 ```
+
+You will need to restart the backend service if you change something in the go code.
 
 # Docker
 
