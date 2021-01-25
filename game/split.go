@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/dascr/dascr-board/logger"
 	"github.com/dascr/dascr-board/player"
 	"github.com/dascr/dascr-board/podium"
 	"github.com/dascr/dascr-board/score"
@@ -33,7 +34,8 @@ func (g *SplitGame) StartGame() error {
 	for i := range g.Base.Player {
 		score := score.BaseScore{
 			Score: startscore,
-			Split: true,
+			Split: false,
+			Hit:   false,
 		}
 		g.Base.Player[i].Score = score
 		g.Base.Player[i].ThrowRounds = make([]throw.Round, 0)
@@ -63,6 +65,13 @@ func (g *SplitGame) GetStatusDisplay() BaseGame {
 
 // NextPlayer will satisfy interface Game for game Split
 func (g *SplitGame) NextPlayer(h *ws.Hub) {
+	activePlayer := &g.Base.Player[g.Base.ActivePlayer]
+	sequence, err := g.Base.UndoLog.GetLastSequence()
+	if err != nil {
+		logger.Errorf("Error getting last sequence in nextPlayer Split-Score: %+v", err)
+	}
+	checkAndSplit(&g.Base, activePlayer, sequence)
+	activePlayer.Score.Split = false
 	switchToNextPlayer(&g.Base, h)
 }
 
@@ -142,7 +151,8 @@ func (g *SplitGame) Rematch(h *ws.Hub) error {
 	for i := range g.Base.Player {
 		score := score.BaseScore{
 			Score: startscore,
-			Split: true,
+			Split: false,
+			Hit:   false,
 		}
 		g.Base.Player[i].Score = score
 		g.Base.Player[i].ThrowRounds = make([]throw.Round, 0)
@@ -185,55 +195,55 @@ func splitLogic(g *SplitGame, player *player.Player, number, modifier int, seque
 		// 15
 		if number == 15 {
 			chargeupScore(g, player, points, sequence)
-			player.Score.Split = false
+			player.Score.Hit = true
 		}
 	case 2:
 		// 16
 		if number == 16 {
 			chargeupScore(g, player, points, sequence)
-			player.Score.Split = false
+			player.Score.Hit = true
 		}
 	case 3:
 		// Double
 		if modifier == 2 {
 			chargeupScore(g, player, points, sequence)
-			player.Score.Split = false
+			player.Score.Hit = true
 		}
 	case 4:
 		// 17
 		if number == 17 {
 			chargeupScore(g, player, points, sequence)
-			player.Score.Split = false
+			player.Score.Hit = true
 		}
 	case 5:
 		// 18
 		if number == 18 {
 			chargeupScore(g, player, points, sequence)
-			player.Score.Split = false
+			player.Score.Hit = true
 		}
 	case 6:
 		// Triple
 		if modifier == 3 {
 			chargeupScore(g, player, points, sequence)
-			player.Score.Split = false
+			player.Score.Hit = true
 		}
 	case 7:
 		// 19
 		if number == 19 {
 			chargeupScore(g, player, points, sequence)
-			player.Score.Split = false
+			player.Score.Hit = true
 		}
 	case 8:
 		// 20
 		if number == 20 {
 			chargeupScore(g, player, points, sequence)
-			player.Score.Split = false
+			player.Score.Hit = true
 		}
 	case 9:
 		// 25
 		if number == 25 {
 			chargeupScore(g, player, points, sequence)
-			player.Score.Split = false
+			player.Score.Hit = true
 		}
 	default:
 		break
@@ -251,7 +261,7 @@ func checkAndSplit(base *BaseGame, player *player.Player, sequence *undo.Sequenc
 		return
 	}
 
-	if player.Score.Split {
+	if !player.Score.Hit && !player.Score.Split {
 		previousScore := player.Score.Score
 		player.Score.Score = player.Score.Score / 2
 		sequence.AddActionToSequence(undo.Action{
@@ -259,8 +269,10 @@ func checkAndSplit(base *BaseGame, player *player.Player, sequence *undo.Sequenc
 			PreviousScore: previousScore,
 			Player:        player,
 		})
+
+		player.Score.Split = true
 	}
-	player.Score.Split = true
+	player.Score.Hit = false
 }
 
 func checkEndGame(base *BaseGame, sequence *undo.Sequence) {
