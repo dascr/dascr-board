@@ -10,4 +10,5 @@ type BaseScore struct {
 	Closed        []bool // Cricket
 	CurrentNumber int    // ATC
 	Split         bool   // Split
+	Hit           bool   // Split
 }
