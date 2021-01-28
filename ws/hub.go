@@ -1,5 +1,7 @@
 package ws
 
+import "github.com/dascr/dascr-board/logger"
+
 // Message represents a websocket message
 type Message struct {
 	Data []byte
@@ -26,6 +28,7 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case s := <-h.Register:
+			logger.Debug("Client registered via websocket")
 			connections := h.Rooms[s.Room]
 			if connections == nil {
 				connections = make(map[*Connection]bool)
@@ -33,6 +36,7 @@ func (h *Hub) Run() {
 			}
 			h.Rooms[s.Room][s.Conn] = true
 		case s := <-h.Unregister:
+			logger.Debug("Client unregistered via websocket")
 			connections := h.Rooms[s.Room]
 			if connections != nil {
 				if _, ok := connections[s.Conn]; ok {

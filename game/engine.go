@@ -246,8 +246,8 @@ func NextPlayer(h *ws.Hub) http.HandlerFunc {
 			game := Games[uid]
 			game.GameObject.NextPlayer(h)
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte("Switched to next player")); err != nil {
-				logger.Errorf("Error when writing response back to browser: %+v", err)
+			if err := json.NewEncoder(w).Encode(game.GameObject); err != nil {
+				logger.Errorf("Error when encoding json: %+v", err)
 			}
 		} else {
 			http.Error(w, "There is no game with this id", http.StatusNotFound)
@@ -292,8 +292,8 @@ func InsertThrow(h *ws.Hub) http.HandlerFunc {
 			}
 
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte("Throw was added")); err != nil {
-				logger.Errorf("Error writing response back to browser: %+v", err)
+			if err := json.NewEncoder(w).Encode(game.GameObject); err != nil {
+				logger.Errorf("Error when encoding json: %+v", err)
 			}
 		} else {
 			http.Error(w, "There is no game with this id", http.StatusNotFound)
@@ -331,8 +331,8 @@ func Rematch(h *ws.Hub) http.HandlerFunc {
 				return
 			}
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte("Rematch triggered")); err != nil {
-				logger.Errorf("Error writing response back to browser: %+v", err)
+			if err := json.NewEncoder(w).Encode(data.GameObject.GetStatusDisplay()); err != nil {
+				logger.Errorf("Error when encoding json: %+v", err)
 			}
 
 		} else {
