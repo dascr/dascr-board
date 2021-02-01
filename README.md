@@ -42,6 +42,8 @@ This file will tell the frontend where to look for the backend api. Remember you
 
 To build the frontend you will also need `node` and `yarn` (you could use npm, but Makefile is designed to use yarn, as I am using it).
 
+Please be advised your yarn version should be something like: `1.22.10` not `0.32+git` which the Raspberry PI will install from the repositories. Better use this tutorial to install yarn (applicable for Debian): [https://linuxize.com/post/how-to-install-yarn-on-debian-10/](https://linuxize.com/post/how-to-install-yarn-on-debian-10/).
+
 Then you do:
 
 ```bash
