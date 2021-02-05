@@ -66,14 +66,10 @@ func GetAllPlayer(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		res, err := json.Marshal(&players)
-		if err != nil {
-			logger.Errorf("Marshalling players response: %+v", err)
-			return
-		}
-
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write(res); err != nil {
+
+		if err := json.NewEncoder(w).Encode(players); err != nil {
 			logger.Errorf("Error writing response back to browser: %+v", err)
 		}
 	}
@@ -113,14 +109,9 @@ func GetSpecificPlayer(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		res, err := json.Marshal(&player)
-		if err != nil {
-			logger.Errorf("Marshalling player response: %+v", err)
-			return
-		}
-
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write(res); err != nil {
+		if err := json.NewEncoder(w).Encode(player); err != nil {
 			logger.Errorf("Error writing response back to browser: %+v", err)
 		}
 	}
@@ -255,14 +246,9 @@ func AddPlayer(db *sql.DB) http.HandlerFunc {
 		}
 		player.UID = strconv.FormatInt(newID, 10)
 
-		res, err := json.Marshal(player)
-		if err != nil {
-			logger.Errorf("Marshaling JSON response when creating player: %+v", err)
-			return
-		}
-
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write(res); err != nil {
+		if err := json.NewEncoder(w).Encode(player); err != nil {
 			logger.Errorf("Error writing response back to browser: %+v", err)
 		}
 	}
@@ -333,14 +319,9 @@ func UpdatePlayer(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		res, err := json.Marshal(player)
-		if err != nil {
-			logger.Errorf("Marshaling JSON response when creating player: %+v", err)
-			return
-		}
-
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write(res); err != nil {
+		if err := json.NewEncoder(w).Encode(player); err != nil {
 			logger.Errorf("Error writing response back to browser: %+v", err)
 		}
 	}

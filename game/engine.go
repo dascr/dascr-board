@@ -43,8 +43,8 @@ func GetAllGames() http.HandlerFunc {
 		for _, element := range Games {
 			gamesSlice = append(gamesSlice, element)
 		}
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(gamesSlice); err != nil {
 			logger.Errorf("Error when encoding json: %+v", err)
 		}
@@ -215,6 +215,8 @@ func CreateGame(db *sql.DB, h *ws.Hub) http.HandlerFunc {
 		h.Broadcast <- message
 
 		// json encode game as response
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(data); err != nil {
 			logger.Errorf("Error when encoding json: %+v", err)
 		}
@@ -245,6 +247,7 @@ func NextPlayer(h *ws.Hub) http.HandlerFunc {
 		if _, ok := Games[uid]; ok {
 			game := Games[uid]
 			game.GameObject.NextPlayer(h)
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			if err := json.NewEncoder(w).Encode(game.GameObject); err != nil {
 				logger.Errorf("Error when encoding json: %+v", err)
@@ -291,6 +294,7 @@ func InsertThrow(h *ws.Hub) http.HandlerFunc {
 				return
 			}
 
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			if err := json.NewEncoder(w).Encode(game.GameObject); err != nil {
 				logger.Errorf("Error when encoding json: %+v", err)
@@ -330,6 +334,7 @@ func Rematch(h *ws.Hub) http.HandlerFunc {
 				http.Error(w, "There was an error triggering", 500)
 				return
 			}
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			if err := json.NewEncoder(w).Encode(data.GameObject.GetStatusDisplay()); err != nil {
 				logger.Errorf("Error when encoding json: %+v", err)

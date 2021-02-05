@@ -1,0 +1,655 @@
+openapi: 3.0.0
+info:
+  description: 'DaSCR-board API specification'
+  version: 'v1'
+  title: 'DaSCR-Board API'
+servers:
+  - url: 'http://localhost:8000/api'
+    variables: {}
+    description: Default Config or Docker
+tags:
+  - name: Debug
+    description: 'Will only run if DEBUG=TRUE'
+  - name: Game
+    description: 'Manage Games'
+  - name: Player
+    description: 'Manage Player'
+paths:
+  '/debug/{id}/redirect':
+    get:
+      parameters:
+        - $ref: '#/components/parameters/GameID'
+      tags:
+        - Debug
+      summary: Trigger websocket redirect
+      responses:
+        '200':
+          description: successful operation
+  '/debug/{id}/update':
+    get:
+      parameters:
+        - $ref: '#/components/parameters/GameID'
+      tags:
+        - Debug
+      summary: Trigger websocket update
+      responses:
+        '200':
+          description: successful operation
+  '/game':
+    get:
+      tags:
+        - Game
+      summary: Get all games running
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
+  '/game/{id}':
+    get:
+      tags:
+        - Game
+      summary: Get a specific game by id
+      parameters:
+        - $ref: '#/components/parameters/GameID'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Base'
+        "404":
+          description: game with id not found
+    post:
+      tags:
+        - Game
+      summary: Create a new game with id
+      parameters:
+        - $ref: '#/components/parameters/GameID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGame"
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Game'
+        "400":
+          description: bad combination of body parameters
+        "500":
+          description: game could not be created
+    delete:
+      tags:
+        - Game
+      summary: Delete a game by id
+      parameters:
+        - $ref: '#/components/parameters/GameID'
+      responses:
+        "204":
+         description: successful operation
+        "404":
+          description: game with id not found
+  '/game/{id}/display':
+    get:
+      tags:
+        - Game
+      summary: Get a specific game by id (stripped output for less data size, missing UndoLog and ThrowRounds)
+      parameters:
+        - $ref: '#/components/parameters/GameID'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Base'
+        "404":
+          description: game with id not found
+  '/game/{id}/throw/{number}/{modifier}':
+    post:
+      tags:
+        - Game
+      summary: Send a throw to the game with id
+      parameters:
+        - $ref: '#/components/parameters/GameID'
+        - $ref: '#/components/parameters/Number'
+        - $ref: '#/components/parameters/Modifier'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Base'
+        "404":
+          description: game with id not found
+        "400":
+          description: throw was not added
+  '/game/{id}/nextPlayer':
+    post:
+      tags:
+        - Game
+      summary: Switch to next player in game with id
+      parameters:
+        - $ref: '#/components/parameters/GameID'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/GameObject'
+        "404":
+          description: game with id not found
+  '/game/{id}/undo':
+    post:
+      tags:
+        - Game
+      summary: Undo last action in game with id
+      parameters:
+        - $ref: '#/components/parameters/GameID'
+      responses:
+        "200":
+          description: successful operation
+        "404":
+          description: game with id not found
+  '/game/{id}/rematch':
+    post:
+      tags:
+        - Game
+      summary: Start game with id from the beginning
+      parameters:
+        - $ref: '#/components/parameters/GameID'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Base'
+        "404":
+          description: game with id not found
+  '/player':
+    get:
+      tags:
+        - Player
+      summary: Get all players in DB
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Player'
+    post:
+      tags:
+        - Player
+      summary: Create a player in DB
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlayer"
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Player'
+  '/player/{id}':
+    get:
+      tags:
+        - Player
+      summary: Get a specific player by id
+      parameters:
+        - $ref: '#/components/parameters/PlayerID'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Player'
+        "404":
+          description: player with id not found
+    patch:
+      tags:
+        - Player
+      summary: Get a specific player by id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Player"
+      parameters:
+        - $ref: '#/components/parameters/PlayerID'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Player'
+        "404":
+          description: player with id not found
+    delete:
+      tags:
+        - Player
+      summary: Delete a player by id
+      parameters:
+        - $ref: '#/components/parameters/PlayerID'
+      responses:
+        "204":
+         description: successful operation
+        "404":
+          description: player with id not found
+  '/player/{id}/image':
+    post:
+      tags:
+        - Player
+      summary: Upload an image for player with id
+      parameters:
+        - $ref: '#/components/parameters/PlayerID'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlayerImage"
+      responses:
+        "200":
+          description: successful operation
+        "400":
+          description: bad request
+        "500":
+          description: unable to decode player image
+
+
+components:
+  schemas:
+    Game:
+      type: object
+      properties:
+        uid:
+          type: string
+          example: "dascr"
+        player:
+          type: array
+          items:
+            type: integer
+            example: [1, 2, 3, 4]
+        game:
+          type: string
+          example: "x01"
+        variant:
+          type: string
+          example: "501"
+        in:
+          type: string
+          example: "straight"
+        out:
+          type: string
+          example: "double"
+        sound:
+          type: boolean
+          example: true
+        podium:
+          type: boolean
+          example: false
+        autoswitch:
+          type: boolean
+          example: false
+        cricketrandom:
+          type: boolean
+          example: false
+        cricketghost:
+          type: boolean
+          example: false
+        GameObject:
+          type: object
+          $ref: "#/components/schemas/GameObject"
+
+    Player:
+      type: object
+      properties:
+        UID:
+          type: integer
+          example: 1
+        Name:
+          type: string
+          example: "Patrick"
+        Nickname:
+          type: string
+          example: "The l33t c0der"
+        Image:
+          type: string
+          example: "images/static_7.png"
+        ThrowRounds:
+          type: array
+          items:
+            $ref: "#/components/schemas/ThrowRound"
+        TotalThrowCount:
+          type: integer
+          example: 6
+        Score:
+          type: object
+          $ref: "#/components/schemas/Score"
+        LastThrows:
+          type: array
+          items:
+            $ref: "#/components/schemas/Throw"
+        ThrowSum:
+          type: integer
+          example: 81
+        Average:
+          type: number
+          example: 45.89
+
+
+    GameObject:
+      type: object
+      $ref: "#/components/schemas/Base"
+
+    Base:
+      type: object
+      properties:
+        Base:
+          type: object
+          properties:
+            UID:
+              type: string
+              example: "dascr"
+            Game:
+              type: string
+              example: "x01"
+            Player:
+              type: array
+              items:
+                $ref: "#/components/schemas/Player"
+            Variant:
+              type: string
+              example: "501"
+            In:
+              type: string
+              example: "straight"
+            Out:
+              type: string
+              example: "double"
+            ActivePlayer:
+              type: integer
+              example: 1
+            ThrowRound:
+              type: integer
+              example: 2
+            GameState:
+              type: string
+              example: "THROW"
+            Message:
+              type: string
+              example: "-"
+            Settings:
+              type: object
+              properties:
+                Sound:
+                  type: boolean
+                  example: true
+                Podium:
+                  type: boolean
+                  example: false
+                Autoswitch:
+                  type: boolean
+                  example: false
+            UndoLog:
+              type: array
+              $ref: "#/components/schemas/Sequence"
+            Podium:
+              type: array
+              items:
+                $ref: "#/components/schemas/Player"
+            CricketController:
+              type: object
+              properties:
+                NumberClosed:
+                  type: array
+                  example: [false, false, false, false, false, false, false]
+                Numbers:
+                  type: array
+                  example: [15,16,17,18,19,20,25]
+                NumberRevealed:
+                  type: array
+                  example: [false, false, false, false, false, false, false]
+                Random:
+                  type: boolean
+                  example: false
+                Ghost:
+                  type: boolean
+                  example: false
+
+    ThrowRound:
+      type: object
+      properties:
+        Round:
+          type: integer
+          example: 1
+        Done:
+          type: boolean
+          example: false
+        Throws:
+          type: array
+          items:
+            $ref: "#/components/schemas/Throw"
+
+    Score:
+      type: object
+      properties:
+        Score:
+          type: integer
+          example: 321
+        ParkScore:
+          type: integer
+          example: 381
+        InitialScore:
+          type: integer
+          example: 501
+        Numbers:
+          type: array
+          example: [0, 0, 0, 0, 0, 0, 0]
+        Closed:
+          type: array
+          example: [false, false, false, false, false, false, false]
+        CurrentNumber:
+          type: integer
+          example: 15
+        Split:
+          type: boolean
+          example: false
+        Hit:
+          type: boolean
+          example: false
+
+    Throw:
+      type: object
+      properties:
+        Number:
+          type: integer
+          example: 20
+        Modifier:
+          type: integer
+          example: 3
+
+    Sequence:
+      type: object
+      properties:
+        Sequence:
+          type: integer
+          example: 1
+        Action:
+          type: array
+          items:
+            $ref: "#/components/schemas/Action"
+
+    Action:
+      type: object
+      properties:
+        Number:
+          type: integer
+          example: 1
+        Action:
+          type: string
+          example: "CREATEGAME"
+        Points:
+          type: integer
+          example: 0
+        RoundNumber:
+          type: integer
+          example: 0
+        Player:
+          type: object
+          $ref: "#/components/schemas/Player"
+        GameID:
+          type: string
+          example: ""
+        NumberIndex:
+          type: integer
+          example: 0
+        Modifier:
+          type: integer
+          example: 0
+        PreviousGameState:
+          type: string
+          example: ""
+        PreviousScore:
+          type: integer
+          example: 0
+        PreviousParkScore:
+          type: integer
+          example: 0
+        PreviousPlayerIndex:
+          type: integer
+          example: 0
+        PreviousThrowSum:
+          type: integer
+          example: 0
+        PreviousAverage:
+          type: integer
+          example: 0
+        PreviousLastThree:
+          type: array
+          $ref: "#/components/schemas/Throw"
+        PreviousMessage:
+          type: string
+          example: ""
+        PreviousNumberToHit:
+          type: integer
+          example: 0
+
+    CreateGame:
+      type: object
+      properties:
+        uid:
+          type: string
+          example: "dascr"
+        player:
+          type: array
+          example: [1,2]
+        game:
+          type: string
+          example: "x01"
+        variant:
+          type: string
+          example: "501"
+        in:
+          type: string
+          example: "straight"
+        out:
+          type: string
+          example: "double"
+        sound:
+          type: boolean
+          example: true
+        podium:
+          type: boolean
+          example: false
+        autoswitch:
+          type: boolean
+          example: false
+        cricketrandom:
+          type: boolean
+          example: false
+        cricketghost:
+          type: boolean
+          example: false
+
+    CreatePlayer:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Patrick"
+        nickname:
+          type: string
+          example: "L33t C0der"
+
+    CreatePlayerImage:
+      type: object
+      properties:
+        b64:
+          type: string
+          description: base64 encoded image
+
+  parameters:
+    GameID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: 'Unique Game ID'
+    PlayerID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: 'Unique Player ID'
+    Number:
+      name: number
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: 'Number which was hit 0-20 or 25'
+    Modifier:
+      name: modifier
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 3
+      description: 'Which segment was hit: 1 - single, 2 - double, 3 - triple'

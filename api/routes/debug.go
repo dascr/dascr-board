@@ -15,6 +15,7 @@ func websocketSendUpdate(h *ws.Hub) http.HandlerFunc {
 			Data: []byte("update"),
 		}
 		h.Broadcast <- message
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -26,6 +27,7 @@ func websocketSendRedirect(h *ws.Hub) http.HandlerFunc {
 			Data: []byte("redirect"),
 		}
 		h.Broadcast <- message
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
