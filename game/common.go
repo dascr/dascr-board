@@ -263,6 +263,26 @@ func fillWithZeros(base *BaseGame, sequence *undo.Sequence, previousState, Previ
 		}
 		currentThrowRound.Done = true
 
+		// When X01 we need to set new parkScore
+		if base.Game == "x01" {
+			activePlayer.Score.ParkScore = activePlayer.Score.Score
+			previousParkScore := activePlayer.Score.ParkScore
+			previousScore := activePlayer.Score.Score
+			previousAverage := activePlayer.Average
+			previousThrowSum := activePlayer.ThrowSum
+			previousLastThree := activePlayer.LastThrows
+
+			sequence.AddActionToSequence(undo.Action{
+				Action:            "UPDATESCOREANDPARK",
+				Player:            activePlayer,
+				PreviousScore:     previousScore,
+				PreviousParkScore: previousParkScore,
+				PreviousAverage:   previousAverage,
+				PreviousThrowSum:  previousThrowSum,
+				PreviousLastThree: previousLastThree,
+			})
+		}
+
 		sequence.AddActionToSequence(undo.Action{
 			Action:            "CLOSEPLAYERTHROWROUND",
 			Player:            activePlayer,
