@@ -3,6 +3,15 @@ This is the successor of my previous project [Dart-O-Mat 3000](https://github.co
 
 It will handle darts games and keep the score. That's its basic function. Detailed documentation will follow.
 
+# Detailed documentation
+A detailed documentation on how to set that up and use it you can find at [dascr.org](https://dascr.org).
+
+# Donate
+If you like this project and want to leave me a cup of coffee or an icecold German beer:
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=W2KPLBLTVYK3A&source=url)
+
+
 # Installation
 
 DaSCR - Board should work for multiple operating systems. I develop and test on linux but it should basically compile on any os `gcc` and `go` is running on.
