@@ -170,7 +170,7 @@ func (g *CricketGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 						scoreCut(g, points, index, activePlayer.UID, allPlayer, sequence)
 					}
 				case "normal":
-					scoreNormal(g, points, index, *activePlayer, sequence)
+					scoreNormal(g, points, index, activePlayer, sequence)
 				case "no":
 				}
 
@@ -324,12 +324,12 @@ func scoreCut(g *CricketGame, points, index int, activeID string, allPlayer []pl
 
 }
 
-func scoreNormal(g *CricketGame, points, index int, player player.Player, sequence *undo.Sequence) {
+func scoreNormal(g *CricketGame, points, index int, player *player.Player, sequence *undo.Sequence) {
 	if checkClosed(player.Score, index) {
 		player.Score.Score += points
 		sequence.AddActionToSequence(undo.Action{
 			Action: "GAINPOINTS",
-			Player: &player,
+			Player: player,
 			Points: points,
 		})
 	}
@@ -365,15 +365,18 @@ func checkWin(g *CricketGame) bool {
 		return false
 	case "normal":
 		// If not all numbers of active player are closed there is no win possible
+		// Player wins if all closed and biggest score
 		if checkAllClosed(activePlayer.Score) {
 			// If player has biggest score he wins
+			biggestScore := true
 			for _, p := range g.Base.Player {
 				if activePlayer.UID != p.UID {
 					if activePlayerScore < p.Score.Score {
-						return true
+						biggestScore = false
 					}
 				}
 			}
+			return biggestScore
 		}
 
 	default:
