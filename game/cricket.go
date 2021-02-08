@@ -339,34 +339,51 @@ func checkWin(g *CricketGame) bool {
 	var activePlayer = g.Base.Player[g.Base.ActivePlayer]
 	var activePlayerScore = activePlayer.Score.Score
 
-	// If not all numbers of active player are closed there is no win possible
-	if !checkAllClosed(activePlayer.Score) {
-		return false
-	}
-
 	// Switch over cut or normal (default is noscore)
 	switch g.Base.Variant {
 	case "cut":
+		// It does not matter if the active player has everything closed
+		// as he could make someone other win
+		// Player wins if all closed and least score
 		for _, p := range g.Base.Player {
-			if activePlayer.UID != p.UID {
-				if activePlayerScore > p.Score.Score {
-					return false
+			allClosed := checkAllClosed(p.Score)
+			leastScore := true
+
+			for _, pl := range g.Base.Player {
+				if p.UID != pl.UID {
+					if p.Score.Score > pl.Score.Score {
+						leastScore = false
+					}
 				}
 			}
+
+			if allClosed && leastScore {
+				return true
+			}
+
 		}
+		return false
 	case "normal":
-		for _, p := range g.Base.Player {
-			if activePlayer.UID != p.UID {
-				if activePlayerScore < p.Score.Score {
-					return false
+		// If not all numbers of active player are closed there is no win possible
+		if checkAllClosed(activePlayer.Score) {
+			// If player has biggest score he wins
+			for _, p := range g.Base.Player {
+				if activePlayer.UID != p.UID {
+					if activePlayerScore < p.Score.Score {
+						return true
+					}
 				}
 			}
 		}
 
 	default:
+		// This applies to noscore
+		if checkAllClosed(activePlayer.Score) {
+			return true
+		}
 		break
 	}
-	return true
+	return false
 }
 
 func cricketWin(g *CricketGame, activePlayer *player.Player, sequence *undo.Sequence, throwRound *throw.Round) {
