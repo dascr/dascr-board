@@ -72,6 +72,7 @@ func (g *SplitGame) NextPlayer(h *ws.Hub) {
 	}
 	checkAndSplit(&g.Base, activePlayer, sequence)
 	activePlayer.Score.Split = false
+	activePlayer.Score.Hit = false
 	switchToNextPlayer(&g.Base, h)
 }
 
@@ -272,7 +273,6 @@ func checkAndSplit(base *BaseGame, player *player.Player, sequence *undo.Sequenc
 
 		player.Score.Split = true
 	}
-	player.Score.Hit = false
 }
 
 func checkEndGame(base *BaseGame, sequence *undo.Sequence) {
