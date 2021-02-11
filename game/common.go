@@ -328,10 +328,6 @@ func switchToNextPlayer(base *BaseGame, h *ws.Hub) {
 		// Check if throw round done by all players and increase
 		checkRoundDone(base, sequence)
 	}
-
-	if base.Game == "split" {
-		checkEndGame(base, sequence)
-	}
 }
 
 // This will check if the round is done and increase overall

@@ -74,6 +74,7 @@ func (g *SplitGame) NextPlayer(h *ws.Hub) {
 	activePlayer.Score.Split = false
 	activePlayer.Score.Hit = false
 	switchToNextPlayer(&g.Base, h)
+	checkEndGame(&g.Base, sequence)
 }
 
 // RequestThrow will satisfy interface Game for game Split
