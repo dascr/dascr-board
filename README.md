@@ -337,5 +337,5 @@ Controller
 
 Right now I am missing a few things I planned on.
 
-* More games (Around the clock, Split-Score, Highscore, Elimination)
+* More games (Highscore, Elimination)
 * Sound
