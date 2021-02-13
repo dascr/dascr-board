@@ -11,7 +11,6 @@ If you like this project and want to leave me a cup of coffee or an icecold Germ
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=W2KPLBLTVYK3A&source=url)
 
-
 # Installation
 
 DaSCR - Board should work for multiple operating systems. I develop and test on linux but it should basically compile on any os `gcc` and `go` is running on.
@@ -339,3 +338,6 @@ Right now I am missing a few things I planned on.
 
 * More games (Highscore, Elimination)
 * Sound
+
+# Credits
+Sound effects obtained from https://www.zapsplat.com
