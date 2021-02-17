@@ -351,7 +351,7 @@ func checkWin(g *CricketGame) bool {
 
 			for _, pl := range g.Base.Player {
 				if p.UID != pl.UID {
-					if p.Score.Score > pl.Score.Score {
+					if p.Score.Score >= pl.Score.Score {
 						leastScore = false
 					}
 				}
