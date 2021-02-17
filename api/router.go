@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"embed"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,11 +14,11 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
-	"github.com/phogolabs/parcello"
-
-	// This will import for bundling with parcello
-	_ "github.com/dascr/dascr-board/static"
 )
+
+// Embed static images
+//go:embed images
+var static embed.FS
 
 func getDir(dir string) string {
 	cwd, err := os.Getwd()
@@ -78,13 +79,8 @@ func SetRoutes(db *sql.DB, h *ws.Hub) *chi.Mux {
 	})
 
 	// Static content
-	staticImageDir, err := parcello.Manager.Dir("/images")
-	if err != nil {
-		logger.Error("Reading parcello dir '/images'")
-	}
-
 	r.Route("/images", func(r chi.Router) {
-		r.Mount("/", http.StripPrefix("/images", http.FileServer(staticImageDir)))
+		r.Mount("/", http.FileServer(http.FS(static)))
 	})
 	r.Mount("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir(getDir("uploads")))))
 

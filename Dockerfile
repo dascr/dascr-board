@@ -23,7 +23,6 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN PARCELLO_RESOURCE_DIR=./static go generate ./...
 RUN go build -o dascr-board .
 
 # Move to /dist directory as the place for resulting binary folder
