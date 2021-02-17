@@ -80,7 +80,7 @@
                                     {scoreOrHitorder(player, $state.gameData, hitOrder[$state.gameData.ThrowRound - 2])}
                                 {:else}Throw Start Score{/if}
                             {:else}
-                                {scoreOrHitorder(player, $state.gameData, hitOrder[$state.gameData.ThrowRound - 2])}
+                                {scoreOrHitorder(player, $state.gameData, hitOrder[$state.gameData.ThrowRound - 1])}
                             {/if}
                         </p>
                         <p class="font-semibold  text-2xl mt-5 flex flex-row">
