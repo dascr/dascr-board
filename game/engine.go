@@ -28,6 +28,7 @@ type Data struct {
 	Variant       string `json:"variant"`
 	In            string `json:"in"`
 	Out           string `json:"out"`
+	Punisher      bool   `json:"punisher"`
 	Sound         bool   `json:"sound"`
 	Podium        bool   `json:"podium"`
 	AutoSwitch    bool   `json:"autoswitch"`
@@ -124,6 +125,7 @@ func CreateGame(db *sql.DB, h *ws.Hub) http.HandlerFunc {
 					Variant:      data.Variant,
 					In:           data.In,
 					Out:          data.Out,
+					Punisher:     data.Punisher,
 					ActivePlayer: activePlayer,
 					ThrowRound:   1,
 					GameState:    "THROW",

@@ -85,6 +85,14 @@ func (g *X01Game) RequestThrow(number, modifier int, h *ws.Hub) error {
 
 		// New score will be
 		newScore := activePlayer.Score.Score - points
+
+		// Add 100 if punisher enabled
+		if g.Base.Punisher {
+			if number == 0 || modifier == 0 {
+				newScore = activePlayer.Score.Score + 100
+			}
+		}
+
 		// Handle cases win, bust, normal throw
 		switch {
 		// BUST

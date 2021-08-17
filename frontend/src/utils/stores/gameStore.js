@@ -11,6 +11,7 @@ const store = () => {
             sound: true,
             podium: false,
             autoswitch: false,
+            punisher: false,
         },
         cricket: {
             random: false,
