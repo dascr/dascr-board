@@ -5,6 +5,7 @@
     import CricketFormParts from './formparts/CricketFormParts.svelte';
     import ATCFormParts from './formparts/ATCFormParts.svelte';
     import SplitScoreFormParts from './formparts/SplitScoreFormParts.svelte';
+    import ShanghaiFormParts from './formparts/ShanghaiFormParts.svelte';
     import setupGame from '../../../utils/stores/gameStore';
     import { goto, url } from '@roxi/routify';
 
@@ -14,6 +15,7 @@
         { id: 'cricket', text: 'Cricket' },
         { id: 'atc', text: 'Around The Clock' },
         { id: 'split', text: 'Split-Score' },
+        { id: 'shanghai', text: 'Shanghai'},
     ];
 
     let availablePlayer = [];
@@ -35,6 +37,9 @@
                 break;
             case 'split':
                 gameMode = SplitScoreFormParts;
+                break;
+            case 'shanghai':
+                gameMode = ShanghaiFormParts;
                 break;
 
             default:
@@ -168,7 +173,7 @@
                     </label>
                 </div>
 
-                <div class="w-1/3">
+                <div class="w-1/3" class:hidden={$setupGame.game === "shanghai"}>
                     <label for="podium" class="flex justify-start items-start">
                         <div
                             class="bg-white border-2 rounded border-gray-400 w-6 h-6 flex flex-shrink-0 justify-center items-center mr-2">

@@ -4,6 +4,7 @@
     import CricketRules from './rules/CricketRules.svelte';
     import ATCRules from './rules/ATCRules.svelte';
     import SplitScoreRules from './rules/SplitScoreRules.svelte';
+    import ShanghaiRules from './rules/ShanghaiRules.svelte';
     import ws from '../../../utils/socket';
     import setupGame from '../../../utils/stores/gameStore';
     import {onMount} from "svelte";
@@ -31,6 +32,9 @@
                 break;
             case 'split':
                 gameMode = SplitScoreRules;
+                break;
+            case 'shanghai':
+                gameMode = ShanghaiRules;
                 break;
 
             default:

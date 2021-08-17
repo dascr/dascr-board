@@ -179,6 +179,7 @@ func CreateGame(db *sql.DB, h *ws.Hub) http.HandlerFunc {
 					},
 				},
 			}
+
 		case "split":
 			data.GameObject = &SplitGame{
 				Base: BaseGame{
