@@ -48,8 +48,8 @@ build-armv8_64: download
 
 build-frontend: clean-frontend
 	@echo "[*] Building Svelte App"
-	@cd frontend && yarn install
-	@NODE_ENV=production yarn --cwd "./frontend" run build
+	@cd frontend &&  pnpm install
+	@NODE_ENV=production pnpm --dir "./frontend" run build
 	@rm ./frontend/public/build/*.map
 	@echo "[OK] Svelte App was built"
 	@echo "[OK] Serve content of ./frontend/public via a webserver"
@@ -78,8 +78,8 @@ run-dev-backend:
 
 run-dev-frontend:
 	@echo "[*] Starting Frontend Development, listening to 127.0.0.1"
-	@yarn --cwd "./frontend" run dev
+	@pnpm --dir "./frontend" run dev
 
 run-dev-frontend-exp:
 	@echo "[*] Starting Frontend Development, listening to 0.0.0.0"
-	@yarn --cwd "./frontend" run dev-expose
+	@pnpm --dir "./frontend" run dev-expose
