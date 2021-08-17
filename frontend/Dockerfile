@@ -10,10 +10,10 @@ COPY rollup.config.js ./
 COPY package*.json ./
 COPY . .
 
-RUN yarn install
+RUN npm install
 
-RUN yarn run build
+RUN npm run build
 
 EXPOSE 5000
 
-CMD [ "yarn", "run", "dev-expose" ]
+CMD [ "npm", "run", "dev-expose" ]
