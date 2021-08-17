@@ -7,7 +7,6 @@ import (
 
 	"github.com/dascr/dascr-board/logger"
 	"github.com/dascr/dascr-board/player"
-	"github.com/dascr/dascr-board/podium"
 	"github.com/dascr/dascr-board/score"
 	"github.com/dascr/dascr-board/throw"
 	"github.com/dascr/dascr-board/undo"
@@ -41,8 +40,6 @@ func (g *SplitGame) StartGame() error {
 		g.Base.Player[i].ThrowRounds = make([]throw.Round, 0)
 		g.Base.Player[i].LastThrows = make([]throw.Throw, 3)
 	}
-
-	g.Base.Podium = &podium.Podium{}
 
 	g.Base.UndoLog = &undo.Log{}
 	sequence := g.Base.UndoLog.CreateSequence()

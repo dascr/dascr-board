@@ -173,7 +173,7 @@
                     </label>
                 </div>
 
-                <div class="w-1/3" class:hidden={$setupGame.game === "shanghai"}>
+                <div class="w-1/3" class:hidden={$setupGame.game === "shanghai" || $setupGame.game === "split"}>
                     <label for="podium" class="flex justify-start items-start">
                         <div
                             class="bg-white border-2 rounded border-gray-400 w-6 h-6 flex flex-shrink-0 justify-center items-center mr-2">

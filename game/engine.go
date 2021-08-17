@@ -192,12 +192,32 @@ func CreateGame(db *sql.DB, h *ws.Hub) http.HandlerFunc {
 					GameState:    "THROW",
 					Message:      "",
 					Settings: &settings.Settings{
-						Podium:     data.Podium,
+						Podium:     false,
 						Sound:      data.Sound,
 						AutoSwitch: data.AutoSwitch,
 					},
 				},
 			}
+
+		case "shanghai":
+			data.GameObject = &ShanghaiGame{
+				Base: BaseGame{
+					UID:          data.UID,
+					Game:         data.Game,
+					Player:       players,
+					Variant:      data.Variant,
+					ActivePlayer: activePlayer,
+					ThrowRound:   1,
+					GameState:    "THROW",
+					Message:      "",
+					Settings: &settings.Settings{
+						Podium:     false,
+						Sound:      data.Sound,
+						AutoSwitch: data.AutoSwitch,
+					},
+				},
+			}
+
 		}
 
 		if err := data.GameObject.StartGame(); err != nil {

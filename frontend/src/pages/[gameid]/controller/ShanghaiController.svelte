@@ -2,7 +2,6 @@
     import { goto, url } from '@roxi/routify';
     import { onMount } from 'svelte';
     import ws from '../../../utils/socket';
-    import { scoreOrCurrentNumber } from '../../../utils/methods';
     import SiDoTrMiGrid from './inputs/SiDoTrMiGrid.svelte';
     import ControllerHeader from './ControllerHeader.svelte';
     import state from '../../../utils/stores/stateStore';
@@ -59,6 +58,9 @@
             <td class="border-l border-r border-dashed font-bold px-3">
                 Number To Hit Next
             </td>
+            <td class="border-l border-r border-dashed font-bold px-3">
+                Score
+            </td>
             <td
                 class="border-l border-r border-dashed font-bold px-3"
                 colspan="3">
@@ -96,7 +98,11 @@
                 </td>
                 <td
                     class="px-3 border-r border-l border-dashed border-opacity-10">
-                    {scoreOrCurrentNumber(player, $state.gameData)}
+                    {player.Score.CurrentNumber}
+                </td>
+                <td
+                    class="px-3 border-r border-l border-dashed border-opacity-10">
+                    {player.Score.Score}
                 </td>
                 {#each player.LastThrows as thr}
                     <td
