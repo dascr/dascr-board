@@ -4,6 +4,7 @@
     import CricketScoreboard from './CricketScoreboard.svelte';
     import AtcScoreboard from './ATCScoreboard.svelte';
     import SplitScoreboard from './SplitScoreboard.svelte';
+    import ShanghaiScoreboard from './ShanghaiScoreboard.svelte';
 
     export let gameid;
     let headerdiv = document.getElementsByClassName('header')[0];
@@ -32,6 +33,10 @@
 
             case 'split':
                 gameMode = SplitScoreboard;
+                break;
+
+            case 'shanghai':
+                gameMode = ShanghaiScoreboard;
                 break;
 
             default:
