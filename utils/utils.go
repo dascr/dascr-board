@@ -61,6 +61,14 @@ func CheckRoundDone(players []player.Player, currentRound int, podium *podium.Po
 	return rnds == len(playersInGame)
 }
 
+// CheckPlayerRoundDone will see if a specific players has thrown to the ongoing game.ThrowRound
+func CheckPlayerRoundDone(player player.Player, currentRound int) bool {
+	if len(player.ThrowRounds) > 0 && len(player.ThrowRounds[currentRound-1].Throws) > 0 {
+		return player.ThrowRounds[currentRound-1].Done
+	}
+	return false
+}
+
 // GetSingleRandomCricketNumber will return 1 random cricket number
 func GetSingleRandomCricketNumber() int {
 	n := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25}
