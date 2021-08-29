@@ -26,7 +26,8 @@
 
     onMount(async () => {
         // init websocket
-        const ws = await import('$utils/socket');
+        const im = await import('$utils/socket');
+        const ws = im.default;
         const socket = ws.init(gameid, 'Split-Score Controller');
 
         await state.updateState(gameid);

@@ -13,7 +13,8 @@
     headerdiv.style.display = 'none';
 
     // init websocket
-    const ws = await import('$utils/socket');
+    const im = await import('$utils/socket');
+    const ws = im.default;
     const socket = ws.init(gameid, 'Scanpage');
 
     let qrcodelink = baseURL + `/${gameid}/game`;

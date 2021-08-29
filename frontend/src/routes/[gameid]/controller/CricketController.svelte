@@ -19,7 +19,8 @@
 
     onMount(async () => {
         // init websocket
-        const ws = await import('$utils/socket');
+        const im = await import('$utils/socket');
+        const ws = im.default;
         const socket = ws.init(gameid, 'Cricket Controller');
 
         await state.updateState(gameid);
