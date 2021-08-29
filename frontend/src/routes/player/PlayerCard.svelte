@@ -1,6 +1,8 @@
 <script>
   export let uid, name, nickname, image, onDelete, showDelete, active;
-  let apiBase = import.meta.env.VITE_API_BASE;
+  import myenv from '$utils/env';
+
+  let apiBase = myenv.apiBase;
   let activeStyle =
     'border-4 border-white shadow-2xl opacity-100 transition duration-700 ease-in-out';
 </script>

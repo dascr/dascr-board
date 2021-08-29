@@ -7,9 +7,11 @@
     import state from '$stores/stateStore';
     import {page} from '$app/stores';
     import {goto} from '$app/navigation';
+    import myenv from '$utils/env';
+
+    let apiBaseURL = myenv.apiBase;
 
     let gameid = $page.params.gameid;
-    let apiBaseURL = import.meta.env.VITE_API_BASE;
 
     const hitOrder = [
         '15',

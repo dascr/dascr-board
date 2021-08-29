@@ -1,9 +1,11 @@
 <script>
     import { scoreOrPodium } from '$utils/methods';
-
     import Bullet from './Bullet.svelte';
+    import myenv from '$utils/env';
+
     export let player, gameData, active;
-    let apiBase = import.meta.env.VITE_API_BASE;
+
+    let apiBase = myenv.apiBase;
     let activeStyle =
         'border-4 border-white shadow-2xl opacity-100 transition duration-700 ease-in-out';
 </script>
@@ -37,7 +39,7 @@
                         </td>
                     {/each}
 
-                    {#each Array(3 - player.LastThrows.length) as _, _}
+                    {#each Array(3 - player.LastThrows.length) as _, __}
                         <td>-</td>
                     {/each}
                 </tr>

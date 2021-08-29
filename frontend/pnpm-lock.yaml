@@ -2,6 +2,7 @@ lockfileVersion: 5.3
 
 specifiers:
   '@fortawesome/fontawesome-free': ^5.15.4
+  '@sveltejs/adapter-static': ^1.0.0-next.17
   '@sveltejs/kit': next
   '@zerodevx/svelte-toast': ^0.5.1
   autoprefixer: ^10.3.3
@@ -25,6 +26,7 @@ dependencies:
   svelte-easy-crop: 1.0.4
 
 devDependencies:
+  '@sveltejs/adapter-static': 1.0.0-next.17
   '@sveltejs/kit': 1.0.0-next.159_svelte@3.42.4
   autoprefixer: 10.3.3_postcss@8.3.6
   concurrently: 6.2.1
@@ -94,6 +96,10 @@ packages:
     dependencies:
       estree-walker: 2.0.2
       picomatch: 2.3.0
+    dev: true
+
+  /@sveltejs/adapter-static/1.0.0-next.17:
+    resolution: {integrity: sha512-RKYNkQxtsMgt0wD8PhfXR1hGT1Tmq1E5eZeTr1KxIerczITRnWVT8LElfu/9Kusv44yYlyQtNc1mLoYqgloOQw==}
     dev: true
 
   /@sveltejs/kit/1.0.0-next.159_svelte@3.42.4:

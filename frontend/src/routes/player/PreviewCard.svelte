@@ -2,8 +2,9 @@
   import previewPlayer from '$stores/playerStore';
   import Cropper from 'svelte-easy-crop';
   import PlayerCard from './PlayerCard.svelte';
+  import myenv from '$utils/env';
 
-  let apiBase = import.meta.env.VITE_API_BASE;
+  let apiBase = myenv.apiBase;
 
   // Cropper options
   const options = {
