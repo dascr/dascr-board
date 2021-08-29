@@ -1,5 +1,5 @@
 import ky from 'ky';
-let apiURL = 'API_URL';
+let apiURL = import.meta.env.VITE_API_URL;
 
 const api = ky.extend({
   prefixUrl: apiURL,
