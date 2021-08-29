@@ -154,7 +154,7 @@ func scoreIfHit(game *ShanghaiGame, number int, modifier int, throwRound *throw.
 	previousLastThree := p.LastThrows
 	previousMessage := game.Base.Message
 	previousState := game.Base.GameState
-	// previousNumberToHit := p.Score.CurrentNumber
+
 	// Check if hit is relevant
 	if p.Score.CurrentNumber == number {
 		p.Score.Score += number * modifier
@@ -170,16 +170,6 @@ func scoreIfHit(game *ShanghaiGame, number int, modifier int, throwRound *throw.
 			PreviousLastThree: previousLastThree,
 		})
 	}
-
-	// if len(throwRound.Throws) == 3 {
-	// 	p.Score.CurrentNumber += 1
-	// 	sequence.AddActionToSequence(undo.Action{
-	// 		Action:              "ATCINCREASENUMBER",
-	// 		GameID:              game.Base.UID,
-	// 		Player:              p,
-	// 		PreviousNumberToHit: previousNumberToHit,
-	// 	})
-	// }
 }
 
 // winIfShanghai will check if throw round was shanghai and win/end the game
