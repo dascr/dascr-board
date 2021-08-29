@@ -1,6 +1,5 @@
 <script>
     import { onMount } from 'svelte';
-    import ws from '$utils/socket';
     import { scoreOrPodium } from '$utils/methods';
     import TwentyFiveGrid from './inputs/TwentyFiveGrid.svelte';
     import ControllerHeader from './ControllerHeader.svelte';
@@ -15,6 +14,7 @@
 
     onMount(async () => {
         // init websocket
+        const ws = await import('$utils/socket');
         const socket = ws.init(gameid, 'X01 Controller');
 
         await state.updateState(gameid);

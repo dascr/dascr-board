@@ -4,7 +4,6 @@
         scoreOrPodium,
     } from '$utils/methods';
     import { onMount } from 'svelte';
-    import ws from '$utils/socket';
     import ControllerHeader from './ControllerHeader.svelte';
     import CricketGrid from './inputs/CricketGrid.svelte';
     import state from '$stores/stateStore';
@@ -20,6 +19,7 @@
 
     onMount(async () => {
         // init websocket
+        const ws = await import('$utils/socket');
         const socket = ws.init(gameid, 'Cricket Controller');
 
         await state.updateState(gameid);

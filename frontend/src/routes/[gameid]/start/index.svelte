@@ -2,18 +2,18 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import ws from '$utils/socket';
 
   let gameid = $page.params.gameid;
 
   let baseURL = window.location.protocol + '//' + window.location.host;
 
-  onMount(() => {
+  onMount(async () => {
     // Hide navbar in this page
     let headerdiv = document.getElementsByClassName('header')[0];
     headerdiv.style.display = 'none';
 
     // init websocket
+    const ws = await import('$utils/socket');
     const socket = ws.init(gameid, 'Scanpage');
 
     let qrcodelink = baseURL + `/${gameid}/game`;

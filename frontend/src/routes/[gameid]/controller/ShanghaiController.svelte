@@ -1,6 +1,5 @@
 <script>
     import { onMount } from 'svelte';
-    import ws from '$utils/socket';
     import SiDoTrMiGrid from './inputs/SiDoTrMiGrid.svelte';
     import ControllerHeader from './ControllerHeader.svelte';
     import state from '$stores/stateStore';
@@ -14,6 +13,7 @@
 
     onMount(async () => {
         // init websocket
+        const ws = await import('$utils/socket');
         const socket = ws.init(gameid, 'Shanghai Controller');
 
         await state.updateState(gameid);

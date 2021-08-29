@@ -1,6 +1,5 @@
 <script>
     import { onMount } from 'svelte';
-    import ws from '$utils/socket';
     import PlayerCard from '../../player/PlayerCard.svelte';
     import state from '$stores/stateStore';
     import {page} from '$app/stores';
@@ -10,6 +9,7 @@
 
     onMount(async () => {
         // init websocket
+        const ws = await import('$utils/socket');
         const socket = ws.init(gameid, 'Shanghai Scoreboard');
 
         await state.updateState(gameid);

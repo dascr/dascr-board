@@ -5,7 +5,6 @@
     import ATCRules from './rules/ATCRules.svelte';
     import SplitScoreRules from './rules/SplitScoreRules.svelte';
     import ShanghaiRules from './rules/ShanghaiRules.svelte';
-    import ws from '$utils/socket';
     import setupGame from '$stores/gameStore';
     import {onMount} from "svelte";
     import {page} from "$app/stores";
@@ -43,8 +42,9 @@
         }
     }
 
-    onMount(() => {
+    onMount(async () => {
         // init websocket
+        const ws = await import('$utils/socket');
         const socket = ws.init(gameid, 'Game Setup Page');
 
         socket.addEventListener("redirect", () => {
