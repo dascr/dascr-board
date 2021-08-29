@@ -59,11 +59,11 @@ func (g *ShanghaiGame) NextPlayer(h *ws.Hub) {
 	activePlayer := &g.Base.Player[g.Base.ActivePlayer]
 	sequence, err := g.Base.UndoLog.GetLastSequence()
 	if err != nil {
-		logger.Errorf("Error getting last sequence in nextPlayer Split-Score: %+v", err)
+		logger.Errorf("Error getting last sequence in nextPlayer Shanghai: %+v", err)
 	}
-	checkIncrease(&g.Base, activePlayer, sequence)
 	switchToNextPlayer(&g.Base, h)
 	checkShanghaiEnd(&g.Base, sequence)
+	checkIncrease(&g.Base, activePlayer, sequence)
 }
 
 // RequestThrow will satisfy inteface Game for Shanghai
@@ -132,6 +132,7 @@ func (g *ShanghaiGame) Rematch(h *ws.Hub) error {
 		g.Base.Player[i].Score = score
 		g.Base.Player[i].ThrowRounds = make([]throw.Round, 0)
 		g.Base.Player[i].LastThrows = make([]throw.Throw, 3)
+		g.Base.Player[i].TotalThrowCount = 0
 	}
 
 	sequence := g.Base.UndoLog.CreateSequence()
@@ -153,7 +154,7 @@ func scoreIfHit(game *ShanghaiGame, number int, modifier int, throwRound *throw.
 	previousLastThree := p.LastThrows
 	previousMessage := game.Base.Message
 	previousState := game.Base.GameState
-	previousNumberToHit := p.Score.CurrentNumber
+	// previousNumberToHit := p.Score.CurrentNumber
 	// Check if hit is relevant
 	if p.Score.CurrentNumber == number {
 		p.Score.Score += number * modifier
@@ -170,15 +171,15 @@ func scoreIfHit(game *ShanghaiGame, number int, modifier int, throwRound *throw.
 		})
 	}
 
-	if len(throwRound.Throws) == 3 {
-		p.Score.CurrentNumber += 1
-		sequence.AddActionToSequence(undo.Action{
-			Action:              "ATCINCREASENUMBER",
-			GameID:              game.Base.UID,
-			Player:              p,
-			PreviousNumberToHit: previousNumberToHit,
-		})
-	}
+	// if len(throwRound.Throws) == 3 {
+	// 	p.Score.CurrentNumber += 1
+	// 	sequence.AddActionToSequence(undo.Action{
+	// 		Action:              "ATCINCREASENUMBER",
+	// 		GameID:              game.Base.UID,
+	// 		Player:              p,
+	// 		PreviousNumberToHit: previousNumberToHit,
+	// 	})
+	// }
 }
 
 // winIfShanghai will check if throw round was shanghai and win/end the game
@@ -188,6 +189,7 @@ func winIfShanghai(game *ShanghaiGame, throwRound *throw.Round, p *player.Player
 	double := false
 	triple := false
 
+	// For the throwround fill the conditions
 	for _, thr := range throwRound.Throws {
 		switch thr.Modifier {
 		case 1:
@@ -199,8 +201,8 @@ func winIfShanghai(game *ShanghaiGame, throwRound *throw.Round, p *player.Player
 		}
 	}
 
+	// Shanghai was shot
 	if single && double && triple {
-		logger.Info("Shanghai was shot")
 		previousState := game.Base.GameState
 		previousMessage := game.Base.Message
 
@@ -271,14 +273,13 @@ func checkShanghaiEnd(base *BaseGame, sequence *undo.Sequence) {
 func checkIncrease(base *BaseGame, p *player.Player, sequence *undo.Sequence) {
 	previousNumberToHit := p.Score.CurrentNumber
 
-	if base.ThrowRound != p.Score.CurrentNumber {
-		p.Score.CurrentNumber = base.ThrowRound
+	if base.ThrowRound != p.Score.CurrentNumber || utils.CheckPlayerRoundDone(*p, base.ThrowRound) {
+		p.Score.CurrentNumber += 1
 		sequence.AddActionToSequence(undo.Action{
 			Action:              "ATCINCREASENUMBER",
 			GameID:              base.UID,
 			Player:              p,
 			PreviousNumberToHit: previousNumberToHit,
 		})
-
 	}
 }
