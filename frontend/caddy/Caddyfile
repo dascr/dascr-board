@@ -1,0 +1,48 @@
+:5000
+bind 0.0.0.0
+
+root * /usr/src/app/build
+encode gzip
+
+handle /api/* {
+	reverse_proxy localhost:8000
+}
+
+handle /images/* {
+	reverse_proxy localhost:8000
+}
+
+handle /uploads/* {
+	reverse_proxy localhost:8000
+}
+
+handle /ws/* {
+	reverse_proxy localhost:8000
+}
+
+handle {
+	try_files {path} {file} /index.html
+	file_server
+}
+
+header {
+# enable HSTS
+Strict-Transport-Security max-age=31536000;
+
+# disable clients from sniffing the media type
+X-Content-Type-Options nosniff
+
+# clickjacking protection
+X-Frame-Options DENY
+
+# keep referrer data off of HTTP connections
+Referrer-Policy no-referrer-when-downgrade
+}
+
+log {
+	output file /usr/src/caddy/dascr-board.log {
+		roll_size 1gb
+		roll_keep 5
+		roll_keep_for 720h
+	}
+}
