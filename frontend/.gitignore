@@ -1,6 +1,8 @@
+tailwind-output.css
 package-lock.json
 pnpm-lock.yaml
-/node_modules/
-/public/build/
-.routify
 .DS_Store
+node_modules
+/build
+/.svelte-kit
+/package

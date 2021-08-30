@@ -2,6 +2,7 @@ version: '3.9'
 services:
   backend:
     build: .
+    image: dascr/backend:v1
     ports:
       - "8000:8000"
     environment:
@@ -13,12 +14,13 @@ services:
     depends_on:
       - backend
     build: ./frontend/
+    image: dascr/frontend:v1
     ports:
       - "5000:5000"
     environment:
-      - API_BASE=http://localhost:8000/
-      - API_URL=http://localhost:8000/api
-      - WS_URL=ws://localhost:8000/ws
+      - VITE_API_BASE=http://localhost:8000/
+      - VITE_API_URL=http://localhost:8000/api
+      - VITE_WS_URL=ws://localhost:8000/ws
     networks:
       - dascr
 

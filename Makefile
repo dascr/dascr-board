@@ -47,12 +47,11 @@ build-armv8_64: download
 	@echo "[OK] Your backend binary is at ./dist/<os>/"
 
 build-frontend: clean-frontend
-	@echo "[*] Building Svelte App"
-	@cd frontend &&  pnpm install
-	@NODE_ENV=production pnpm --dir "./frontend" run build
-	@rm ./frontend/public/build/*.map
-	@echo "[OK] Svelte App was built"
-	@echo "[OK] Serve content of ./frontend/public via a webserver"
+	@echo "[*] Building SvelteKit App"
+	@cd frontend &&  pnpm install --silent
+	@NODE_ENV=production pnpm --dir "./frontend" run --silent build
+	@echo "[OK] SvelteKit App was built"
+	@echo "[OK] Serve content of ./frontend/build via a webserver"
 
 download:
 	@echo "[*] go mod dowload"
@@ -66,8 +65,8 @@ clean-backend:
 	@echo "[OK] Cleanup done"
 
 clean-frontend:
-	@echo "[*] Cleanup Svelte App"
-	@rm -rf ./frontend/public/build
+	@echo "[*] Cleanup SvelteKit App"
+	@rm -rf ./frontend/build
 	@echo "[OK] Cleanup done"
 
 clean-all: clean-backend clean-frontend
@@ -79,7 +78,3 @@ run-dev-backend:
 run-dev-frontend:
 	@echo "[*] Starting Frontend Development, listening to 127.0.0.1"
 	@pnpm --dir "./frontend" run dev
-
-run-dev-frontend-exp:
-	@echo "[*] Starting Frontend Development, listening to 0.0.0.0"
-	@pnpm --dir "./frontend" run dev-expose

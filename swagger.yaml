@@ -315,6 +315,9 @@ components:
         out:
           type: string
           example: "double"
+        punisher:
+          type: boolean
+          example: false
         sound:
           type: boolean
           example: true
@@ -400,6 +403,9 @@ components:
             Out:
               type: string
               example: "double"
+            Punisher:
+              type: boolean
+              example: false
             ActivePlayer:
               type: integer
               example: 1
@@ -589,6 +595,9 @@ components:
         out:
           type: string
           example: "double"
+        punisher:
+          type: boolean
+          example: false
         sound:
           type: boolean
           example: true

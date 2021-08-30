@@ -1,5 +1,4 @@
 <script>
-  import { url } from '@roxi/routify';
   export let open = false;
 </script>
 
@@ -21,19 +20,19 @@
   <nav class="p-12 text-xl">
     <a
       class="block"
-      href={$url('/')}
+      href={'/'}
       on:click={() => {
         open = false;
       }}><i class="fas fa-home w-10" />Start</a>
     <a
       class="block"
-      href={$url('/player')}
+      href={'/player'}
       on:click={() => {
         open = false;
       }}><i class="fas fa-user w-10" />Player</a>
     <a
       class="block"
-      href={$url('/credits')}
+      href={'/credits'}
       on:click={() => {
         open = false;
       }}><i class="fas fa-info-circle w-10" />Credits</a>

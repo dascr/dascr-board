@@ -1,19 +1,22 @@
-FROM node:15-alpine
+FROM node:14-alpine
 
-ENV API_BASE=http://localhost:8000/
-ENV API_URL=http://localhost:8000/api
-ENV WS_URL=ws://localhost:8000/ws
+ENV VITE_API_BASE=http://localhost:8000/
+ENV VITE_API_URL=http://localhost:8000/api
+ENV VITE_WS_URL=ws://localhost:8000/ws
 
 WORKDIR /usr/src/app
 
-COPY rollup.config.js ./
 COPY package*.json ./
 COPY . .
 
 RUN npm install
-
 RUN npm run build
+
+WORKDIR /usr/src/app/caddy
+
+RUN wget "https://caddyserver.com/api/download?os=linux&arch=amd64" -O caddy
+RUN chmod +x caddy
 
 EXPOSE 5000
 
-CMD [ "npm", "run", "dev-expose" ]
+CMD [ "/usr/src/app/caddy/caddy", "run", "-config", "Caddyfile" ]
