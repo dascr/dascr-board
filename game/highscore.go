@@ -358,7 +358,7 @@ func eliminate(game *HighGame, newScore int, activePlayer *player.Player, sequen
 			sequence.AddActionToSequence(undo.Action{
 				Action:            "UPDATESCOREANDPARK",
 				GameID:            game.Base.UID,
-				Player:            activePlayer,
+				Player:            pl,
 				PreviousScore:     previousScore,
 				PreviousParkScore: previousParkScore,
 				PreviousAverage:   previousAverage,

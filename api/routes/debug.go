@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"github.com/dascr/dascr-board/game"
 	"github.com/dascr/dascr-board/ws"
 	"github.com/go-chi/chi"
 )
@@ -36,6 +37,7 @@ func DebugRoutes(h *ws.Hub) *chi.Mux {
 	r := chi.NewRouter()
 	r.Get("/{id}/update", websocketSendUpdate(h))
 	r.Get("/{id}/redirect", websocketSendRedirect(h))
+	r.Get("/{id}/display", game.GetSpecificGame())
 
 	return r
 }
