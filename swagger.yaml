@@ -315,7 +315,7 @@ components:
         out:
           type: string
           example: "double"
-        punisher:
+        elimination:
           type: boolean
           example: false
         sound:
@@ -403,7 +403,7 @@ components:
             Out:
               type: string
               example: "double"
-            Punisher:
+            Elimination:
               type: boolean
               example: false
             ActivePlayer:
@@ -428,6 +428,9 @@ components:
                   type: boolean
                   example: false
                 Autoswitch:
+                  type: boolean
+                  example: false
+                Punisher:
                   type: boolean
                   example: false
             UndoLog:
@@ -595,7 +598,7 @@ components:
         out:
           type: string
           example: "double"
-        punisher:
+        elimination:
           type: boolean
           example: false
         sound:

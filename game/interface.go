@@ -17,7 +17,7 @@ type BaseGame struct {
 	Variant           string
 	In                string
 	Out               string
-	Punisher          bool
+	Elimination       bool
 	ActivePlayer      int
 	ThrowRound        int
 	GameState         string

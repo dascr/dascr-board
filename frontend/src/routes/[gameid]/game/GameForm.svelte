@@ -230,7 +230,6 @@ import HighscoreFormParts from './formparts/HighscoreFormParts.svelte';
                     </label>
                 </div>
 
-                <!-- <div class="w-1/3" class:hidden="{$setupGame.game !== 'x01' || $setupGame.game !== 'high'}"> -->
                 <div class="w-1/3" class:hidden="{!punisherAvailable.includes($setupGame.game)}">
                     <label for="punisher" class="flex justify-start items-start">
                         <div

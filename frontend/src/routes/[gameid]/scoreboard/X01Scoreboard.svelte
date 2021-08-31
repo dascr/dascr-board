@@ -28,9 +28,9 @@
 
 <div
     class="flex flex-row mx-auto bg-black bg-opacity-30 rounded-t-2xl overflow-hidden">
-    <p class="text-center border w-1/4 font-bold text-lg rounded-tl-2xl p-2">
+    <p class="text-center border w-1/4 font-bold text-lg rounded-tl-2xl p-2 capitalize">
         Game:
-        {$state.gameData.Game}
+        {$state.gameData.Game === 'high' ? 'Highscore' : $state.gameData.Game}
     </p>
     <p class="text-center border w-1/4 font-bold text-lg p-2">
         In:
