@@ -1,6 +1,7 @@
 <script>
     import GameForm from './GameForm.svelte';
     import X01Rules from './rules/X01Rules.svelte';
+    import HighscoreRules from './rules/HighscoreRules.svelte';
     import CricketRules from './rules/CricketRules.svelte';
     import ATCRules from './rules/ATCRules.svelte';
     import SplitScoreRules from './rules/SplitScoreRules.svelte';
@@ -12,10 +13,6 @@
 
     let gameid = $page.params.gameid;
     let gameMode = X01Rules;
-    let headerdiv = document.getElementsByClassName('header')[0];
-
-    // Hide navbar in this page
-    headerdiv.style.display = 'block';
 
     $: {
         let selectedGame = $setupGame.game;
@@ -36,6 +33,9 @@
             case 'shanghai':
                 gameMode = ShanghaiRules;
                 break;
+            case 'high':
+                gameMode = HighscoreRules;
+                break
 
             default:
                 break;
@@ -43,6 +43,10 @@
     }
 
     onMount(async () => {
+        // Hide navbar in this page
+        let headerdiv = document.getElementsByClassName('header')[0];
+        headerdiv.style.display = 'block';
+
         // init websocket
         const im = await import('$utils/socket');
         const ws = im.default;

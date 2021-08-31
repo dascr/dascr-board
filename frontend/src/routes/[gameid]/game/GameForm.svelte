@@ -9,6 +9,7 @@
     import setupGame from '$stores/gameStore';
     import { page } from '$app/stores';
     import { goto } from '$app/navigation';
+import HighscoreFormParts from './formparts/HighscoreFormParts.svelte';
 
     let gameID = $page.params.gameid;
     let games = [
@@ -17,7 +18,10 @@
         { id: 'atc', text: 'Around The Clock' },
         { id: 'split', text: 'Split-Score' },
         { id: 'shanghai', text: 'Shanghai'},
+        { id: 'high', text: 'Highscore'},
     ];
+
+    let punisherAvailable = ["x01", "high"];
 
     let availablePlayer = [];
     let open;
@@ -42,6 +46,9 @@
             case 'shanghai':
                 gameMode = ShanghaiFormParts;
                 break;
+            case 'high':
+                gameMode = HighscoreFormParts;
+                break
 
             default:
                 break;
@@ -67,6 +74,7 @@
                     in: $setupGame.in || '',
                     out: $setupGame.out || '',
                     punisher: $setupGame.settings.punisher || false,
+                    elimination: $setupGame.elimination || false,
                     sound: $setupGame.settings.sound || false,
                     podium: $setupGame.settings.podium || false,
                     autoswitch: $setupGame.settings.autoswitch || false,
@@ -222,7 +230,8 @@
                     </label>
                 </div>
 
-                <div class="w-1/3" class:hidden="{$setupGame.game !== 'x01'}">
+                <!-- <div class="w-1/3" class:hidden="{$setupGame.game !== 'x01' || $setupGame.game !== 'high'}"> -->
+                <div class="w-1/3" class:hidden="{!punisherAvailable.includes($setupGame.game)}">
                     <label for="punisher" class="flex justify-start items-start">
                         <div
                             class="bg-white border-2 rounded border-gray-400 w-6 h-6 flex flex-shrink-0 justify-center items-center mr-2">
