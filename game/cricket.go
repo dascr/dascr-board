@@ -77,6 +77,7 @@ func (g *CricketGame) StartGame() error {
 	sequence.AddActionToSequence(undo.Action{
 		Action: "CREATEGAME",
 	})
+	g.Base.SoundToPlay = "nextplayer"
 
 	return nil
 }
@@ -104,6 +105,8 @@ func (g *CricketGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 
 	activePlayer := &g.Base.Player[g.Base.ActivePlayer]
 	allPlayer := g.Base.Player
+	var sound string
+	revealed := false
 
 	// Check game state
 	if g.Base.GameState == "THROW" {
@@ -125,11 +128,13 @@ func (g *CricketGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 		}
 
 		if relevant {
+			sound = "1plib"
 			// Throw is relevant, continue
 			// In Ghost reveal if not revealed yet
 			if g.Base.CricketController.Ghost {
 				if !g.Base.CricketController.NumberRevealed[index] {
 					g.Base.CricketController.NumberRevealed[index] = true
+					revealed = true
 					sequence.AddActionToSequence(undo.Action{
 						Action:      "REVEALNUMBER",
 						NumberIndex: index,
@@ -156,6 +161,8 @@ func (g *CricketGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 				// Check if number has to be closed for player
 				if !checkClosed(activePlayer.Score, index) && checkToClose(activePlayer.Score, index) {
 					activePlayer.Score.Closed[index] = true
+					sound = "open"
+
 					sequence.AddActionToSequence(undo.Action{
 						Action:      "CLOSEPLAYERNUMBER",
 						NumberIndex: index,
@@ -183,6 +190,7 @@ func (g *CricketGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 				}
 				if done {
 					g.Base.CricketController.NumberClosed[index] = true
+					sound = "close"
 					sequence.AddActionToSequence(undo.Action{
 						Action:      "CLOSECONTROLLERNUMBER",
 						NumberIndex: index,
@@ -190,7 +198,15 @@ func (g *CricketGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 					})
 				}
 			}
+		} else {
+			sound = "miss"
 		}
+
+		if revealed {
+			sound = "reveal"
+		}
+
+		g.Base.SoundToPlay = sound
 
 		// Check if 3 throws in round and close round
 		// Also set gameState and perhaps increase g.Base.ThrowRound
@@ -261,6 +277,7 @@ func (g *CricketGame) Rematch(h *ws.Hub) error {
 	g.Base.UndoLog.ClearLog()
 	g.Base.ActivePlayer = rg.Intn(len(g.Base.Player))
 	g.Base.ThrowRound = 1
+	g.Base.SoundToPlay = "nextplayer"
 
 	// CreateScore for each player
 	// and init empty throw splice
@@ -401,6 +418,7 @@ func cricketWin(g *CricketGame, activePlayer *player.Player, sequence *undo.Sequ
 
 	g.Base.GameState = "WON"
 	g.Base.Message = "Game shot!"
+	g.Base.SoundToPlay = "win"
 
 	throwRound.Done = true
 	sequence.AddActionToSequence(undo.Action{

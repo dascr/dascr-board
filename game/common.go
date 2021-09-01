@@ -10,6 +10,10 @@ import (
 	"github.com/dascr/dascr-board/ws"
 )
 
+var (
+	soundNoOverwrite []string = []string{"reveal", "open", "close", "T17", "T18", "T19", "T20", "D25"}
+)
+
 // This will check if an ongoing throw round
 // is assosiated with the active player
 // if not it will create one
@@ -58,7 +62,19 @@ func closePlayerRound(base *BaseGame, activePlayer *player.Player, throwRound *t
 	throwRound.Done = true
 	base.GameState = "NEXTPLAYER"
 	base.Message = "Remove Darts!"
-	base.SoundToPlay = "rounddone"
+	// Check if the sound can safely be overwritten
+	// Sounds which are not supposed to be overwritten
+	// go into the var at the top (soundNoOverwrite)
+	overwrite := true
+	for _, sound := range soundNoOverwrite {
+		if sound == base.SoundToPlay {
+			overwrite = false
+			break
+		}
+	}
+	if overwrite {
+		base.SoundToPlay = "rounddone"
+	}
 
 	for _, a := range actions {
 		sequence.AddActionToSequence(a)

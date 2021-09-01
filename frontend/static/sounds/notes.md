@@ -4,14 +4,6 @@
 * Winning Melody
 * Miss
 
-# X01
-* Bust
-* D25
-* T20
-* T19
-* T18
-* T17
-
 # Cricket
 * Hit (1plib)
 * Open
