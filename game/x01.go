@@ -50,6 +50,7 @@ func (g *X01Game) StartGame() error {
 	sequence.AddActionToSequence(undo.Action{
 		Action: "CREATEGAME",
 	})
+	g.Base.SoundToPlay = "nextplayer"
 
 	return nil
 }
@@ -103,7 +104,7 @@ func (g *X01Game) RequestThrow(number, modifier int, h *ws.Hub) error {
 			x01win(g, modifier, throwRound, activePlayer, sequence)
 		// NORMAL THROW
 		default:
-			normalThrow(g, newScore, modifier, throwRound, activePlayer, sequence)
+			normalThrow(g, newScore, number, modifier, throwRound, activePlayer, sequence)
 		}
 
 		// Set assets for Frontend
@@ -146,6 +147,7 @@ func (g *X01Game) Rematch(h *ws.Hub) error {
 	g.Base.UndoLog.ClearLog()
 	g.Base.ActivePlayer = rg.Intn(len(g.Base.Player))
 	g.Base.ThrowRound = 1
+	g.Base.SoundToPlay = "nextplayer"
 
 	// CreateScore for each player
 	// and init empty throw splice
@@ -190,6 +192,7 @@ func x01bust(nextState string, game *X01Game, throwRound *throw.Round, activePla
 	default:
 		game.Base.Message = "-"
 	}
+	game.Base.SoundToPlay = "bust"
 	throwRound.Done = true
 	activePlayer.Score.Score = activePlayer.Score.ParkScore
 	sequence.AddActionToSequence(undo.Action{
@@ -237,7 +240,7 @@ func x01win(game *X01Game, modifier int, throwRound *throw.Round, activePlayer *
 }
 
 // This will handle the normal throw routine
-func normalThrow(game *X01Game, newScore, modifier int, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence) {
+func normalThrow(game *X01Game, newScore, number, modifier int, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence) {
 	// For undo function
 	previousScore := activePlayer.Score.Score
 	previousParkScore := activePlayer.Score.ParkScore
@@ -278,6 +281,29 @@ func normalThrow(game *X01Game, newScore, modifier int, throwRound *throw.Round,
 		PreviousLastThree: previousLastThree,
 	})
 
+	// Check if x01 specific sound has to be played
+	if modifier == 3 {
+		switch number {
+		case 17:
+			game.Base.SoundToPlay = "T17"
+		case 18:
+			game.Base.SoundToPlay = "T18"
+		case 19:
+			game.Base.SoundToPlay = "T19"
+		case 20:
+			game.Base.SoundToPlay = "T20"
+		default:
+		}
+	} else if modifier == 2 {
+		if number == 25 {
+			game.Base.SoundToPlay = "D25"
+		}
+	} else if modifier == 0 || number == 0 {
+		game.Base.SoundToPlay = "miss"
+	} else {
+		game.Base.SoundToPlay = "none"
+	}
+
 	// Check if 3 throws in round and close round
 	// Also set gameState and perhaps increase game.Base.ThrowRound
 	// if everyone has already thrown to this round
@@ -296,7 +322,6 @@ func normalThrow(game *X01Game, newScore, modifier int, throwRound *throw.Round,
 			},
 		}, previousState, previousMessage)
 	}
-
 }
 
 // This will check if a checkout is even possible anymore and return a bool

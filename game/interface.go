@@ -26,6 +26,7 @@ type BaseGame struct {
 	UndoLog           *undo.Log
 	Podium            *podium.Podium
 	CricketController *CricketGameController
+	SoundToPlay       string
 }
 
 // Game will be the interface for different games
