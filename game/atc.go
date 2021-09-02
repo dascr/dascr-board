@@ -38,6 +38,7 @@ func (g *ATCGame) StartGame() error {
 	sequence.AddActionToSequence(undo.Action{
 		Action: "CREATEGAME",
 	})
+	g.Base.SoundToPlay = "nextplayer"
 
 	return nil
 }
@@ -85,6 +86,10 @@ func (g *ATCGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 				break
 			}
 		}
+
+		if number == 0 || modifier == 0 {
+			g.Base.SoundToPlay = "miss"
+		}
 		// Check if 3 throws in round and close round
 		// Also set gameState and perhaps increase game.Base.ThrowRound
 		// if everyone has already thrown to this round
@@ -124,6 +129,7 @@ func (g *ATCGame) Rematch(h *ws.Hub) error {
 	g.Base.UndoLog.ClearLog()
 	g.Base.ActivePlayer = rg.Intn(len(g.Base.Player))
 	g.Base.ThrowRound = 1
+	g.Base.SoundToPlay = "nextplayer"
 
 	for i := range g.Base.Player {
 		score := score.BaseScore{
@@ -163,6 +169,7 @@ func increaseNumberByOne(game *ATCGame, throwRound *throw.Round, p *player.Playe
 		Player:              p,
 		PreviousNumberToHit: previousNumberToHit,
 	})
+	game.Base.SoundToPlay = "1plib"
 }
 
 // increase active player number += modifier
@@ -185,6 +192,15 @@ func increaseNumberByMod(game *ATCGame, throwRound *throw.Round, p *player.Playe
 		Player:              p,
 		PreviousNumberToHit: previousNumberToHit,
 	})
+	switch modifier {
+	case 1:
+		game.Base.SoundToPlay = "1plib"
+	case 2:
+		game.Base.SoundToPlay = "2plibs"
+	case 3:
+		game.Base.SoundToPlay = "3plibs"
+	default:
+	}
 }
 
 // atcwin is for winning the atc game

@@ -40,6 +40,7 @@ func (g *ShanghaiGame) StartGame() error {
 	sequence.AddActionToSequence(undo.Action{
 		Action: "CREATEGAME",
 	})
+	g.Base.SoundToPlay = "nextplayer"
 
 	return nil
 }
@@ -124,6 +125,7 @@ func (g *ShanghaiGame) Rematch(h *ws.Hub) error {
 	g.Base.UndoLog.ClearLog()
 	g.Base.ActivePlayer = rg.Intn(len(g.Base.Player))
 	g.Base.ThrowRound = 1
+	g.Base.SoundToPlay = "nextplayer"
 
 	for i := range g.Base.Player {
 		score := score.BaseScore{
@@ -169,6 +171,9 @@ func scoreIfHit(game *ShanghaiGame, number int, modifier int, throwRound *throw.
 			PreviousThrowSum:  previousThrowSum,
 			PreviousLastThree: previousLastThree,
 		})
+		game.Base.SoundToPlay = "1plib"
+	} else {
+		game.Base.SoundToPlay = "miss"
 	}
 }
 

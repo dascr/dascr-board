@@ -15,14 +15,14 @@
     const socket = ws.init(gameid, 'X01 Scoreboard');
 
     await state.updateState(gameid).then(async () => {
-      if ($state.gameData.Settings.Sound && !$state.soundPlayed) {
+      if ($state.gameData.Settings.Sound) {
         await playSound($state.soundToPlay);
       }
     });
 
     socket.addEventListener('update', async () => {
       await state.updateState(gameid).then(async () => {
-        if ($state.gameData.Settings.Sound && !$state.soundPlayed) {
+        if ($state.gameData.Settings.Sound) {
           await playSound($state.soundToPlay);
         }
       });

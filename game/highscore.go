@@ -48,6 +48,7 @@ func (g *HighGame) StartGame() error {
 	sequence.AddActionToSequence(undo.Action{
 		Action: "CREATEGAME",
 	})
+	g.Base.SoundToPlay = "nextplayer"
 
 	return nil
 }
@@ -107,7 +108,7 @@ func (g *HighGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 			highwin(g, modifier, throwRound, activePlayer, sequence)
 		// NORMAL THROW
 		default:
-			highThrow(g, newScore, modifier, throwRound, activePlayer, sequence)
+			highThrow(g, newScore, number, modifier, throwRound, activePlayer, sequence)
 		}
 
 		// Set assets for Frontend
@@ -147,6 +148,7 @@ func (g *HighGame) Rematch(h *ws.Hub) error {
 	g.Base.UndoLog.ClearLog()
 	g.Base.ActivePlayer = rg.Intn(len(g.Base.Player))
 	g.Base.ThrowRound = 1
+	g.Base.SoundToPlay = "nextplayer"
 
 	// CreateScore for each player
 	// and init empty throw splice
@@ -191,6 +193,7 @@ func highbust(nextState string, game *HighGame, throwRound *throw.Round, activeP
 	default:
 		game.Base.Message = "-"
 	}
+	game.Base.SoundToPlay = "bust"
 	throwRound.Done = true
 	activePlayer.Score.Score = activePlayer.Score.ParkScore
 	sequence.AddActionToSequence(undo.Action{
@@ -238,7 +241,7 @@ func highwin(game *HighGame, modifier int, throwRound *throw.Round, activePlayer
 }
 
 // This will handle the normal throw routine
-func highThrow(game *HighGame, newScore, modifier int, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence) {
+func highThrow(game *HighGame, newScore, number, modifier int, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence) {
 	// First of all elimination check
 	if game.Base.Elimination {
 		eliminate(game, newScore, activePlayer, sequence)
@@ -283,6 +286,31 @@ func highThrow(game *HighGame, newScore, modifier int, throwRound *throw.Round, 
 		PreviousThrowSum:  previousThrowSum,
 		PreviousLastThree: previousLastThree,
 	})
+
+	if game.Base.SoundToPlay != "split" {
+		// Check if x01 specific sound has to be played
+		if modifier == 3 {
+			switch number {
+			case 17:
+				game.Base.SoundToPlay = "T17"
+			case 18:
+				game.Base.SoundToPlay = "T18"
+			case 19:
+				game.Base.SoundToPlay = "T19"
+			case 20:
+				game.Base.SoundToPlay = "T20"
+			default:
+			}
+		} else if modifier == 2 {
+			if number == 25 {
+				game.Base.SoundToPlay = "D25"
+			}
+		} else if modifier == 0 || number == 0 {
+			game.Base.SoundToPlay = "miss"
+		} else {
+			game.Base.SoundToPlay = "none"
+		}
+	}
 
 	// Check if 3 throws in round and close round
 	// Also set gameState and perhaps increase game.Base.ThrowRound
@@ -353,6 +381,7 @@ func eliminate(game *HighGame, newScore int, activePlayer *player.Player, sequen
 
 			pl.Score.Score = 0
 			pl.Score.ParkScore = 0
+			game.Base.SoundToPlay = "split"
 			game.Base.Message = "ELIMINATED!"
 
 			sequence.AddActionToSequence(undo.Action{

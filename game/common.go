@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	soundNoOverwrite []string = []string{"reveal", "open", "close", "T17", "T18", "T19", "T20", "D25"}
+	soundNoOverwrite []string = []string{"reveal", "open", "close", "T17", "T18", "T19", "T20", "D25", "split"}
 )
 
 // This will check if an ongoing throw round
