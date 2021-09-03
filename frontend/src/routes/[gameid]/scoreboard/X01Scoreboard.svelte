@@ -41,7 +41,7 @@
     class="text-center border w-1/4 font-bold text-lg rounded-tl-2xl p-2 capitalize"
   >
     Game:
-    {$state.gameData.Game === 'high' ? 'Highscore' : $state.gameData.Game}
+    {$state.gameData.Game === 'elim' ? 'Elimination' : $state.gameData.Game}
   </p>
   <p class="text-center border w-1/4 font-bold text-lg p-2">
     In:

@@ -43,7 +43,7 @@
                 gameMode = ShanghaiController;
                 break;
 
-            case 'high':
+            case 'elim':
                 gameMode = X01Controller;
                 break;
 

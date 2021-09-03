@@ -1,7 +1,7 @@
 <script>
     import GameForm from './GameForm.svelte';
     import X01Rules from './rules/X01Rules.svelte';
-    import HighscoreRules from './rules/HighscoreRules.svelte';
+    import EliminationRules from './rules/EliminationRules.svelte';
     import CricketRules from './rules/CricketRules.svelte';
     import ATCRules from './rules/ATCRules.svelte';
     import SplitScoreRules from './rules/SplitScoreRules.svelte';
@@ -33,8 +33,8 @@
             case 'shanghai':
                 gameMode = ShanghaiRules;
                 break;
-            case 'high':
-                gameMode = HighscoreRules;
+            case 'elim':
+                gameMode = EliminationRules;
                 break
 
             default:

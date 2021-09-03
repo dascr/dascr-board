@@ -332,9 +332,6 @@ components:
         out:
           type: string
           example: "double"
-        elimination:
-          type: boolean
-          example: false
         sound:
           type: boolean
           example: true
@@ -420,9 +417,6 @@ components:
             Out:
               type: string
               example: "double"
-            Elimination:
-              type: boolean
-              example: false
             ActivePlayer:
               type: integer
               example: 1
@@ -615,9 +609,6 @@ components:
         out:
           type: string
           example: "double"
-        elimination:
-          type: boolean
-          example: false
         sound:
           type: boolean
           example: true

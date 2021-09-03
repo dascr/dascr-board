@@ -1,7 +1,7 @@
 <div class="space-y-5 text-xl">
   <div class="space-y-4">
     <p>
-      In a game of Highscore the object is for one player or a team to be the
+      In a game of Elimination the object is for one player or a team to be the
       first to reach the desired target number starting from 0.
     </p>
     <p>
@@ -46,8 +46,8 @@
   <div class="space-y-4">
     <h4 class="text-center underline font-semibold">Elimination</h4>
     <p>
-      In 'Elimination' the basic rules are the same. But, whenever a player
-      scores the same number as other player(s) the other(s) will be reset to 0.
+      Whenever a player scores the same number as other player(s) the other(s)
+      will be reset to 0.
     </p>
     <p>
       So if player 1 has 250 points and player 2 starts his throw round with 248

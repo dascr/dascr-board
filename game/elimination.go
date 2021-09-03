@@ -16,13 +16,13 @@ import (
 	"github.com/dascr/dascr-board/ws"
 )
 
-// HighGame will hold the HighScore game information
-type HighGame struct {
+// EliminiationGame will hold the Eliminiation game information
+type EliminiationGame struct {
 	Base BaseGame
 }
 
-// StartGame will satisfy interface Game for game HighScore
-func (g *HighGame) StartGame() error {
+// StartGame will satisfy interface Game for game Eliminiation
+func (g *EliminiationGame) StartGame() error {
 	// Score to int
 	setupscore := 0
 
@@ -53,23 +53,23 @@ func (g *HighGame) StartGame() error {
 	return nil
 }
 
-// GetStatus will satisfy interface Game for game HighScore
-func (g *HighGame) GetStatus() BaseGame {
+// GetStatus will satisfy interface Game for game Eliminiation
+func (g *EliminiationGame) GetStatus() BaseGame {
 	return g.Base
 }
 
-// GetStatusDisplay will satisfy interface Game for game HighScore
-func (g *HighGame) GetStatusDisplay() BaseGame {
+// GetStatusDisplay will satisfy interface Game for game Eliminiation
+func (g *EliminiationGame) GetStatusDisplay() BaseGame {
 	return stripDisplay(&g.Base)
 }
 
-// NextPlayer will satisfy interface Game for game HighScore
-func (g *HighGame) NextPlayer(h *ws.Hub) {
+// NextPlayer will satisfy interface Game for game Eliminiation
+func (g *EliminiationGame) NextPlayer(h *ws.Hub) {
 	switchToNextPlayer(&g.Base, h)
 }
 
-// RequestThrow will satisfy interface Game for game HighScore
-func (g *HighGame) RequestThrow(number, modifier int, h *ws.Hub) error {
+// RequestThrow will satisfy interface Game for game Eliminiation
+func (g *EliminiationGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 	sequence := g.Base.UndoLog.CreateSequence()
 
 	// Targetnumber to int
@@ -102,13 +102,13 @@ func (g *HighGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 		switch {
 		// BUST
 		case newScore > target:
-			highbust("BUST", g, throwRound, activePlayer, sequence, activePlayer.Score.Score)
+			eliminationbust("BUST", g, throwRound, activePlayer, sequence, activePlayer.Score.Score)
 		// WIN
 		case newScore == target:
-			highwin(g, modifier, throwRound, activePlayer, sequence)
+			eliminationwin(g, modifier, throwRound, activePlayer, sequence)
 		// NORMAL THROW
 		default:
-			highThrow(g, newScore, number, modifier, throwRound, activePlayer, sequence)
+			eliminationThrow(g, newScore, number, modifier, throwRound, activePlayer, sequence)
 		}
 
 		// Set assets for Frontend
@@ -123,8 +123,8 @@ func (g *HighGame) RequestThrow(number, modifier int, h *ws.Hub) error {
 	return fmt.Errorf("game state is '%+v', so no throw accepted", g.Base.GameState)
 }
 
-// Undo will satisfy interface Game for game Highscore
-func (g *HighGame) Undo(h *ws.Hub) error {
+// Undo will satisfy interface Game for game Eliminiation
+func (g *EliminiationGame) Undo(h *ws.Hub) error {
 	if err := triggerUndo(&g.Base, h); err != nil {
 		return err
 	}
@@ -132,8 +132,8 @@ func (g *HighGame) Undo(h *ws.Hub) error {
 	return nil
 }
 
-// Rematch will satisfy interface Game for game Highscore
-func (g *HighGame) Rematch(h *ws.Hub) error {
+// Rematch will satisfy interface Game for game Eliminiation
+func (g *EliminiationGame) Rematch(h *ws.Hub) error {
 	// Score to int
 	setupscore := 0
 
@@ -178,7 +178,7 @@ func (g *HighGame) Rematch(h *ws.Hub) error {
 }
 
 // This will handle x01bust and reset game state
-func highbust(nextState string, game *HighGame, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence, previousScore int) {
+func eliminationbust(nextState string, game *EliminiationGame, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence, previousScore int) {
 	oldState := game.Base.GameState
 	previousMessage := game.Base.Message
 	previousParkScore := activePlayer.Score.ParkScore
@@ -208,14 +208,14 @@ func highbust(nextState string, game *HighGame, throwRound *throw.Round, activeP
 }
 
 // This will handle x01win
-func highwin(game *HighGame, modifier int, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence) {
+func eliminationwin(game *EliminiationGame, modifier int, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence) {
 	previousMessage := game.Base.Message
 	previousState := game.Base.GameState
 	previousScore := activePlayer.Score.Score
 	previousParkScore := activePlayer.Score.ParkScore
 	// Check if double or master out are met
-	if !highCheckoutMet(game, modifier) {
-		highbust("BUSTCONDITION", game, throwRound, activePlayer, sequence, activePlayer.Score.Score)
+	if !eliminationCheckoutMet(game, modifier) {
+		eliminationbust("BUSTCONDITION", game, throwRound, activePlayer, sequence, activePlayer.Score.Score)
 		return
 	}
 	if game.Base.Settings.Podium {
@@ -241,11 +241,11 @@ func highwin(game *HighGame, modifier int, throwRound *throw.Round, activePlayer
 }
 
 // This will handle the normal throw routine
-func highThrow(game *HighGame, newScore, number, modifier int, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence) {
+func eliminationThrow(game *EliminiationGame, newScore, number, modifier int, throwRound *throw.Round, activePlayer *player.Player, sequence *undo.Sequence) {
+	// Reset sound
+	game.Base.SoundToPlay = "none"
 	// First of all elimination check
-	if game.Base.Elimination {
-		eliminate(game, newScore, activePlayer, sequence)
-	}
+	eliminate(game, newScore, activePlayer, sequence)
 
 	// For undo function
 	previousScore := activePlayer.Score.Score
@@ -257,17 +257,17 @@ func highThrow(game *HighGame, newScore, number, modifier int, throwRound *throw
 	previousState := game.Base.GameState
 
 	// Check if checkout left on double and master out
-	if !highCheckoutPossible(game, newScore) {
-		highbust("BUSTNOCHECKOUT", game, throwRound, activePlayer, sequence, activePlayer.Score.Score)
+	if !eliminationCheckoutPossible(game, newScore) {
+		eliminationbust("BUSTNOCHECKOUT", game, throwRound, activePlayer, sequence, activePlayer.Score.Score)
 		return
 	}
 	// Check if first throw
 	if activePlayer.Score.Score == activePlayer.Score.InitialScore {
 		// Check if in condition met
-		if !highCheckinPossible(game, modifier) {
+		if !eliminationCheckinPossible(game, modifier) {
 			// if last throw and condition not met - bust
 			if len(throwRound.Throws) == 3 {
-				highbust("BUSTCONDITION", game, throwRound, activePlayer, sequence, activePlayer.Score.Score)
+				eliminationbust("BUSTCONDITION", game, throwRound, activePlayer, sequence, activePlayer.Score.Score)
 			}
 			return
 		}
@@ -333,11 +333,11 @@ func highThrow(game *HighGame, newScore, number, modifier int, throwRound *throw
 }
 
 // This will check if a checkout is even possible anymore and return a bool
-func highCheckoutPossible(game *HighGame, newScore int) bool {
+func eliminationCheckoutPossible(game *EliminiationGame, newScore int) bool {
 	// targetnumber to int
 	target, err := strconv.Atoi(game.Base.Variant)
 	if err != nil {
-		logger.Errorf("Error in highCheckoutPossible: %+v", err)
+		logger.Errorf("Error in eliminationCheckoutPossible: %+v", err)
 	}
 
 	if game.Base.Out != "straight" {
@@ -347,7 +347,7 @@ func highCheckoutPossible(game *HighGame, newScore int) bool {
 }
 
 // This will check if the checkout condition is met and return bool
-func highCheckoutMet(game *HighGame, modifier int) bool {
+func eliminationCheckoutMet(game *EliminiationGame, modifier int) bool {
 	if game.Base.Out == "double" {
 		return modifier == 2
 	} else if game.Base.Out == "master" {
@@ -357,7 +357,7 @@ func highCheckoutMet(game *HighGame, modifier int) bool {
 }
 
 // This will check if a checkin is possible and return a bool
-func highCheckinPossible(game *HighGame, modifier int) bool {
+func eliminationCheckinPossible(game *EliminiationGame, modifier int) bool {
 	if game.Base.In == "double" {
 		return modifier == 2
 	} else if game.Base.In == "master" {
@@ -367,7 +367,7 @@ func highCheckinPossible(game *HighGame, modifier int) bool {
 }
 
 // This will check players for same score and reset if applicable
-func eliminate(game *HighGame, newScore int, activePlayer *player.Player, sequence *undo.Sequence) {
+func eliminate(game *EliminiationGame, newScore int, activePlayer *player.Player, sequence *undo.Sequence) {
 	for i := range game.Base.Player {
 		pl := &game.Base.Player[i]
 		if pl.UID != activePlayer.UID && pl.Score.Score == newScore {

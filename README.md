@@ -336,8 +336,7 @@ Controller
 
 Right now I am missing a few things I planned on.
 
-* More games (Highscore, Elimination)
-* Sound
+* More games (Highscore)
 
 # Credits
 Sound effects obtained from https://www.zapsplat.com

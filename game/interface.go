@@ -17,7 +17,6 @@ type BaseGame struct {
 	Variant           string
 	In                string
 	Out               string
-	Elimination       bool
 	ActivePlayer      int
 	ThrowRound        int
 	GameState         string

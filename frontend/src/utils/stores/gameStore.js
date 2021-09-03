@@ -7,7 +7,6 @@ const store = () => {
     variant: '501',
     in: 'straight',
     out: 'double',
-    elimination: false,
     settings: {
       sound: true,
       podium: false,

@@ -43,7 +43,7 @@
                 gameMode = ShanghaiScoreboard;
                 break;
 
-            case 'high':
+            case 'elim':
                 gameMode = X01Scoreboard;
                 break
 

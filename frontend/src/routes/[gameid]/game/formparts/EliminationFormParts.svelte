@@ -20,7 +20,7 @@
 
 <div class="flex flex-col">
   <label for="selectVariant" class="uppercase font-bold text-lg"
-    >Which Highscore do you want to play:</label
+    >Which Elimination do you want to play:</label
   >
   <select
     bind:value={$setupGame.variant}
@@ -63,31 +63,4 @@
     <option value="double" selected="selected">Double</option>
     <option value="master">Master</option>
   </select>
-</div>
-<div class="flex flex-col">
-  <label for="elimination" class="flex justify-start items-start">
-    <div
-      class="bg-white border-2 rounded border-gray-400 w-6 h-6 flex flex-shrink-0 justify-center items-center mr-2"
-    >
-      <input
-        bind:checked={$setupGame.elimination}
-        type="checkbox"
-        id="elimination"
-        name="eliminiation"
-        class="opacity-0 absolute"
-      />
-      <svg
-        class="fill-current hidden w-4 h-4 text-gray-900 pointer-events-none"
-        viewBox="0 0 20 20"
-      >
-        <path d="M0 11l2-2 5 5L18 3l2 2L7 18z" />
-      </svg>
-    </div>
-    <div
-      class="select-none uppercase font-bold text-lg"
-      title="Eliminate player if you match score - sending them to 0"
-    >
-      Elimination
-    </div>
-  </label>
 </div>

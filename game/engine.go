@@ -29,7 +29,6 @@ type Data struct {
 	In            string `json:"in"`
 	Out           string `json:"out"`
 	Punisher      bool   `json:"punisher"`
-	Elimination   bool   `json:"elimination"`
 	Sound         bool   `json:"sound"`
 	Podium        bool   `json:"podium"`
 	AutoSwitch    bool   `json:"autoswitch"`
@@ -126,7 +125,6 @@ func CreateGame(db *sql.DB, h *ws.Hub) http.HandlerFunc {
 					Variant:      data.Variant,
 					In:           data.In,
 					Out:          data.Out,
-					Elimination:  data.Elimination,
 					ActivePlayer: activePlayer,
 					ThrowRound:   1,
 					GameState:    "THROW",
@@ -220,8 +218,8 @@ func CreateGame(db *sql.DB, h *ws.Hub) http.HandlerFunc {
 				},
 			}
 
-		case "high":
-			data.GameObject = &HighGame{
+		case "elim":
+			data.GameObject = &EliminiationGame{
 				Base: BaseGame{
 					UID:          data.UID,
 					Game:         data.Game,
@@ -229,7 +227,6 @@ func CreateGame(db *sql.DB, h *ws.Hub) http.HandlerFunc {
 					Variant:      data.Variant,
 					In:           data.In,
 					Out:          data.Out,
-					Elimination:  data.Elimination,
 					ActivePlayer: activePlayer,
 					ThrowRound:   1,
 					GameState:    "THROW",
