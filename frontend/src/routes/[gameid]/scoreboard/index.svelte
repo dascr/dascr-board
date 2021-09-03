@@ -43,6 +43,10 @@
                 gameMode = ShanghaiScoreboard;
                 break;
 
+            case 'elim':
+                gameMode = X01Scoreboard;
+                break
+
             default:
                 throw new Error('Controller cannot be shown');
                 break;

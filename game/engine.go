@@ -125,7 +125,6 @@ func CreateGame(db *sql.DB, h *ws.Hub) http.HandlerFunc {
 					Variant:      data.Variant,
 					In:           data.In,
 					Out:          data.Out,
-					Punisher:     data.Punisher,
 					ActivePlayer: activePlayer,
 					ThrowRound:   1,
 					GameState:    "THROW",
@@ -134,6 +133,7 @@ func CreateGame(db *sql.DB, h *ws.Hub) http.HandlerFunc {
 						Podium:     data.Podium,
 						Sound:      data.Sound,
 						AutoSwitch: data.AutoSwitch,
+						Punisher:   data.Punisher,
 					},
 				},
 			}
@@ -218,6 +218,27 @@ func CreateGame(db *sql.DB, h *ws.Hub) http.HandlerFunc {
 				},
 			}
 
+		case "elim":
+			data.GameObject = &EliminiationGame{
+				Base: BaseGame{
+					UID:          data.UID,
+					Game:         data.Game,
+					Player:       players,
+					Variant:      data.Variant,
+					In:           data.In,
+					Out:          data.Out,
+					ActivePlayer: activePlayer,
+					ThrowRound:   1,
+					GameState:    "THROW",
+					Message:      "",
+					Settings: &settings.Settings{
+						Podium:     data.Podium,
+						Sound:      data.Sound,
+						AutoSwitch: data.AutoSwitch,
+						Punisher:   data.Punisher,
+					},
+				},
+			}
 		}
 
 		if err := data.GameObject.StartGame(); err != nil {

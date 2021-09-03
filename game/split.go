@@ -48,6 +48,7 @@ func (g *SplitGame) StartGame() error {
 	sequence.AddActionToSequence(undo.Action{
 		Action: "CREATEGAME",
 	})
+	g.Base.SoundToPlay = "nextplayer"
 
 	return nil
 }
@@ -139,6 +140,7 @@ func (g *SplitGame) Rematch(h *ws.Hub) error {
 	g.Base.UndoLog.ClearLog()
 	g.Base.ActivePlayer = rg.Intn(len(g.Base.Player))
 	g.Base.ThrowRound = 1
+	g.Base.SoundToPlay = "nextplayer"
 
 	// Init start score vor edart
 	startscore := 40
@@ -180,6 +182,7 @@ func chargeupScore(g *SplitGame, player *player.Player, points int, sequence *un
 		PreviousScore: previousScore,
 		Player:        player,
 	})
+	g.Base.SoundToPlay = "1plib"
 }
 
 // This is the logic to handle Split Game
@@ -197,54 +200,72 @@ func splitLogic(g *SplitGame, player *player.Player, number, modifier int, seque
 		if number == 15 {
 			chargeupScore(g, player, points, sequence)
 			player.Score.Hit = true
+		} else {
+			g.Base.SoundToPlay = "miss"
 		}
 	case 2:
 		// 16
 		if number == 16 {
 			chargeupScore(g, player, points, sequence)
 			player.Score.Hit = true
+		} else {
+			g.Base.SoundToPlay = "miss"
 		}
 	case 3:
 		// Double
 		if modifier == 2 {
 			chargeupScore(g, player, points, sequence)
 			player.Score.Hit = true
+		} else {
+			g.Base.SoundToPlay = "miss"
 		}
 	case 4:
 		// 17
 		if number == 17 {
 			chargeupScore(g, player, points, sequence)
 			player.Score.Hit = true
+		} else {
+			g.Base.SoundToPlay = "miss"
 		}
 	case 5:
 		// 18
 		if number == 18 {
 			chargeupScore(g, player, points, sequence)
 			player.Score.Hit = true
+		} else {
+			g.Base.SoundToPlay = "miss"
 		}
 	case 6:
 		// Triple
 		if modifier == 3 {
 			chargeupScore(g, player, points, sequence)
 			player.Score.Hit = true
+		} else {
+			g.Base.SoundToPlay = "miss"
 		}
 	case 7:
 		// 19
 		if number == 19 {
 			chargeupScore(g, player, points, sequence)
 			player.Score.Hit = true
+		} else {
+			g.Base.SoundToPlay = "miss"
 		}
 	case 8:
 		// 20
 		if number == 20 {
 			chargeupScore(g, player, points, sequence)
 			player.Score.Hit = true
+		} else {
+			g.Base.SoundToPlay = "miss"
 		}
 	case 9:
 		// 25
 		if number == 25 {
 			chargeupScore(g, player, points, sequence)
 			player.Score.Hit = true
+		} else {
+			g.Base.SoundToPlay = "miss"
 		}
 	default:
 		break
@@ -272,6 +293,7 @@ func checkAndSplit(base *BaseGame, player *player.Player, sequence *undo.Sequenc
 		})
 
 		player.Score.Split = true
+		base.SoundToPlay = "split"
 	}
 }
 

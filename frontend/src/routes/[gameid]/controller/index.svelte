@@ -40,7 +40,11 @@
                 break;
 
             case 'shanghai':
-                gameMode = ShanghaiController
+                gameMode = ShanghaiController;
+                break;
+
+            case 'elim':
+                gameMode = X01Controller;
                 break;
 
             default:

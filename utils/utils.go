@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 	"time"
@@ -17,6 +18,17 @@ func WSSendUpdate(id string, h *ws.Hub) {
 	message := ws.Message{
 		Room: id,
 		Data: []byte("update"),
+	}
+
+	h.Broadcast <- message
+}
+
+// WSSendSound will trigger a websocket message
+// so the frontend knows it needs to play a sound
+func WSSendSound(sound, id string, h *ws.Hub) {
+	message := ws.Message{
+		Room: id,
+		Data: []byte(fmt.Sprintf("sound:%s", sound)),
 	}
 
 	h.Broadcast <- message

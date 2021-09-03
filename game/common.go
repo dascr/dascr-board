@@ -10,6 +10,10 @@ import (
 	"github.com/dascr/dascr-board/ws"
 )
 
+var (
+	soundNoOverwrite []string = []string{"reveal", "open", "close", "T17", "T18", "T19", "T20", "D25", "split"}
+)
+
 // This will check if an ongoing throw round
 // is assosiated with the active player
 // if not it will create one
@@ -58,6 +62,19 @@ func closePlayerRound(base *BaseGame, activePlayer *player.Player, throwRound *t
 	throwRound.Done = true
 	base.GameState = "NEXTPLAYER"
 	base.Message = "Remove Darts!"
+	// Check if the sound can safely be overwritten
+	// Sounds which are not supposed to be overwritten
+	// go into the var at the top (soundNoOverwrite)
+	overwrite := true
+	for _, sound := range soundNoOverwrite {
+		if sound == base.SoundToPlay {
+			overwrite = false
+			break
+		}
+	}
+	if overwrite {
+		base.SoundToPlay = "rounddone"
+	}
 
 	for _, a := range actions {
 		sequence.AddActionToSequence(a)
@@ -141,6 +158,7 @@ func doPodium(base *BaseGame, activePlayer *player.Player, sequence *undo.Sequen
 		base.Podium.AddPlayerToPodium(activePlayer)
 		base.GameState = "NEXTPLAYERWON"
 		base.Message = "Next Winner!"
+		base.SoundToPlay = "win"
 
 		if base.Podium.GetPodiumLength() == 1 {
 			base.Message = "Winner!"
@@ -214,6 +232,7 @@ func doWin(base *BaseGame) {
 	// Set game state
 	base.GameState = "WON"
 	base.Message = "Game shot!"
+	base.SoundToPlay = "win"
 }
 
 // This will strip response for Display function for FrontEnd
@@ -312,6 +331,7 @@ func switchToNextPlayer(base *BaseGame, h *ws.Hub) {
 		// Reset gamestate
 		base.GameState = "THROW"
 		base.Message = "-"
+		base.SoundToPlay = "nextplayer"
 
 		sequence.AddActionToSequence(undo.Action{
 			Action:              "NEXTPLAYER",

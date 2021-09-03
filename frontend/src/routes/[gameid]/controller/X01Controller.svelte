@@ -44,7 +44,7 @@
         class="flex flex-row mx-auto bg-black bg-opacity-30 overflow-hidden">
         <p class="text-center border w-1/4 font-bold text-lg p-2 capitalize">
             Game:
-            {$state.gameData.Game}
+            {$state.gameData.Game === 'elim' ? 'Elimination' : $state.gameData.Game}
         </p>
         <p class="text-center border w-1/4 font-bold text-lg p-2 capitalize">
             In:

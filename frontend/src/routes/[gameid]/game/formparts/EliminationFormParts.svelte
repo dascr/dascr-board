@@ -3,13 +3,24 @@
   import setupGame from '$stores/gameStore';
 
   onMount(() => {
-    $setupGame.variant = '501';
+    $setupGame.variant = '301';
   });
 </script>
 
+<style>
+    input:checked + svg {
+        display: block;
+    }
+    input:disabled + svg {
+        display: block;
+        background: rgba(0, 0, 0, 0.5);
+        cursor: not-allowed;
+    }
+</style>
+
 <div class="flex flex-col">
   <label for="selectVariant" class="uppercase font-bold text-lg"
-    >Which X01 do you want to play:</label
+    >Which Elimination do you want to play:</label
   >
   <select
     bind:value={$setupGame.variant}
@@ -17,8 +28,8 @@
     id="selectVariant"
     name="variant"
   >
-    <option value="301">301</option>
-    <option value="501" selected="selected">501</option>
+    <option value="301" selected="selected">301</option>
+    <option value="501">501</option>
     <option value="701">701</option>
     <option value="901">901</option>
   </select>

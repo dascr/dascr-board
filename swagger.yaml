@@ -35,6 +35,23 @@ paths:
       responses:
         '200':
           description: successful operation
+  '/debug/{id}/display':
+    get:
+      tags:
+        - Debug
+      summary: Get a specific game by id (not stripped with full data)
+      parameters:
+        - $ref: '#/components/parameters/GameID'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Base'
+        "404":
+          description: game with id not found
   '/game':
     get:
       tags:
@@ -315,9 +332,6 @@ components:
         out:
           type: string
           example: "double"
-        punisher:
-          type: boolean
-          example: false
         sound:
           type: boolean
           example: true
@@ -403,9 +417,6 @@ components:
             Out:
               type: string
               example: "double"
-            Punisher:
-              type: boolean
-              example: false
             ActivePlayer:
               type: integer
               example: 1
@@ -428,6 +439,9 @@ components:
                   type: boolean
                   example: false
                 Autoswitch:
+                  type: boolean
+                  example: false
+                Punisher:
                   type: boolean
                   example: false
             UndoLog:
@@ -595,9 +609,6 @@ components:
         out:
           type: string
           example: "double"
-        punisher:
-          type: boolean
-          example: false
         sound:
           type: boolean
           example: true
