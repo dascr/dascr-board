@@ -1,28 +1,33 @@
 <script>
     import { onMount } from 'svelte';
-    import { scoreOrHitorder } from '$utils/methods';
+    import { scoreOrCurrentNumber } from '$utils/methods';
     import TwentyFiveGrid from './inputs/TwentyFiveGrid.svelte';
     import ControllerHeader from './ControllerHeader.svelte';
     import state from '$stores/stateStore';
     import {page} from '$app/stores';
     import {goto} from '$app/navigation';
     import myenv from '$utils/env';
+import SiDoTrMiGrid from './inputs/SiDoTrMiGrid.svelte';
+import SiDoMiGrid from './inputs/SiDoMiGrid.svelte';
 
     let apiBaseURL = myenv.apiBase;
 
     let gameid = $page.params.gameid;
 
-    const hitOrder = [
-        '15',
-        '16',
-        'Any Double',
-        '17',
-        '18',
-        'Any Triple',
-        '19',
-        '20',
-        '25',
-    ];
+    // const hitOrder = [
+    //     '15',
+    //     '16',
+    //     'Any Double',
+    //     '17',
+    //     '18',
+    //     'Any Triple',
+    //     '19',
+    //     '20',
+    //     '25',
+    // ];
+
+    const steelDisplayArray = [1, 4, 7];
+    const eDisplayArray = [3, 6];
 
     onMount(async () => {
         // init websocket
@@ -64,8 +69,7 @@
             {:else}Steel Dart{/if}
         </p>
         <p class="text-center border w-1/3 font-bold text-lg p-2">
-            Round:
-            {$state.gameData.Variant === 'edart' ? $state.gameData.ThrowRound : $state.gameData.ThrowRound - 1}
+            Round: {$state.gameData.ThrowRound}
         </p>
     </div>
 </ControllerHeader>
@@ -127,7 +131,8 @@
                     {#if $state.gameData.ThrowRound >= 2}
                         <td
                             class="px-3 border-r border-l border-dashed border-opacity-10">
-                            {scoreOrHitorder(player, $state.gameData, hitOrder[$state.gameData.ThrowRound - 2])}
+                            <!-- {scoreOrHitorder(player, $state.gameData, hitOrder[$state.gameData.ThrowRound - 2])} -->
+                            {scoreOrCurrentNumber(player, $state.gameData)}
                         </td>
                     {:else}
                         <td
@@ -138,7 +143,8 @@
                 {:else}
                     <td
                         class="px-3 border-r border-l border-dashed border-opacity-10">
-                        {scoreOrHitorder(player, $state.gameData, hitOrder[$state.gameData.ThrowRound - 1])}
+                        <!-- {scoreOrHitorder(player, $state.gameData, hitOrder[$state.gameData.ThrowRound - 1])} -->
+                        {scoreOrCurrentNumber(player, $state.gameData)}
                     </td>
                 {/if}
                 {#each player.LastThrows as thr}
@@ -168,4 +174,20 @@
 </table>
 
 <!-- Input Controls -->
-<TwentyFiveGrid {gameid} />
+{#if $state.gameData.Variant  === "steel"}
+    {#if steelDisplayArray.indexOf($state.gameData.ThrowRound) > -1}
+    <TwentyFiveGrid {gameid} />
+    {:else if $state.gameData.ThrowRound == 10}
+    <SiDoMiGrid {gameid} activePlayer={$state.activePlayer} />
+    {:else}
+    <SiDoTrMiGrid {gameid} activePlayer={$state.activePlayer} />
+    {/if}
+{:else}
+    {#if eDisplayArray.indexOf($state.gameData.ThrowRound) > -1}
+    <TwentyFiveGrid {gameid} />
+    {:else if $state.gameData.ThrowRound == 9}
+    <SiDoMiGrid {gameid} activePlayer={$state.activePlayer} />
+    {:else}
+    <SiDoTrMiGrid {gameid} activePlayer={$state.activePlayer} />
+    {/if}
+{/if}

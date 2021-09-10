@@ -1,7 +1,7 @@
 <div class="space-y-5 text-xl">
   <div class="space-y-4">
     <p>
-      The object of Around The Clock is to score all numbers from 1 to 20 in the
+      The object of Around The Clock is to score all numbers from 1 to 20 + 25 in the
       exact order.
     </p>
   </div>

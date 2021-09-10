@@ -7,17 +7,6 @@
   });
 </script>
 
-<style>
-    input:checked + svg {
-        display: block;
-    }
-    input:disabled + svg {
-        display: block;
-        background: rgba(0, 0, 0, 0.5);
-        cursor: not-allowed;
-    }
-</style>
-
 <div class="flex flex-col">
   <label for="selectVariant" class="uppercase font-bold text-lg"
     >Which Elimination do you want to play:</label
@@ -28,6 +17,7 @@
     id="selectVariant"
     name="variant"
   >
+    <option value="101">101</option>
     <option value="301" selected="selected">301</option>
     <option value="501">501</option>
     <option value="701">701</option>

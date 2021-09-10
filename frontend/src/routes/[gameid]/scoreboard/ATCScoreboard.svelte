@@ -72,7 +72,21 @@
           active={i === $state.gameData.ActivePlayer}
         >
           <div slot="points">
-            <p class="font-extrabold text-5xl mt-5">
+            <p class="font-extrabold text-5xl mt-5 flex flex-row">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="mr-4"
+                version="1.1"
+                viewBox="0 0 16 16"
+                width="32"
+                height="32"
+              >
+                <circle fill="none" stroke="currentColor" cx="8" cy="8" r="6" />
+                <path fill="none" stroke="currentColor" d="M 8 0 L 8 6.5" />
+                <path fill="none" stroke="currentColor" d="M 0 8 L 6.5 8" />
+                <path fill="none" stroke="currentColor" d="M 8 9.5 L 8 16" />
+                <path fill="none" stroke="currentColor" d="M 9.5 8 L 16 8" />
+              </svg>
               {scoreOrCurrentNumber(player, $state.gameData)}
             </p>
             <p class="font-semibold  text-2xl mt-5 flex flex-row">

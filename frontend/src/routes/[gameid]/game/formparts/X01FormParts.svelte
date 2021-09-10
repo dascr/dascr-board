@@ -17,6 +17,7 @@
     id="selectVariant"
     name="variant"
   >
+    <option value="101">101</option>
     <option value="301">301</option>
     <option value="501" selected="selected">501</option>
     <option value="701">701</option>

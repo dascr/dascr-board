@@ -40,6 +40,11 @@ func (g *SplitGame) StartGame() error {
 		g.Base.Player[i].Score = score
 		g.Base.Player[i].ThrowRounds = make([]throw.Round, 0)
 		g.Base.Player[i].LastThrows = make([]throw.Throw, 3)
+		if g.Base.Variant == "steel" {
+			g.Base.Player[i].Score.CurrentNumber = 0
+		} else {
+			g.Base.Player[i].Score.CurrentNumber = 15
+		}
 	}
 
 	g.Base.Podium = &podium.Podium{}
@@ -160,6 +165,11 @@ func (g *SplitGame) Rematch(h *ws.Hub) error {
 		g.Base.Player[i].Score = score
 		g.Base.Player[i].ThrowRounds = make([]throw.Round, 0)
 		g.Base.Player[i].LastThrows = make([]throw.Throw, 3)
+		if g.Base.Variant == "steel" {
+			g.Base.Player[i].Score.CurrentNumber = 0
+		} else {
+			g.Base.Player[i].Score.CurrentNumber = 15
+		}
 	}
 
 	sequence := g.Base.UndoLog.CreateSequence()
@@ -195,6 +205,7 @@ func splitLogic(g *SplitGame, player *player.Player, number, modifier int, seque
 	points := number * modifier
 	// Switch over Throw round as this indicates what needs to be hit
 	switch rnd {
+	case 0:
 	case 1:
 		// 15
 		if number == 15 {
@@ -280,6 +291,14 @@ func splitLogic(g *SplitGame, player *player.Player, number, modifier int, seque
 
 func checkAndSplit(base *BaseGame, player *player.Player, sequence *undo.Sequence) {
 	if base.Variant == "steel" && base.ThrowRound == 1 {
+		previousNumber := player.Score.CurrentNumber
+		player.Score.CurrentNumber = 15
+		sequence.AddActionToSequence(undo.Action{
+			Action:              "ATCINCREASENUMBER",
+			GameID:              base.UID,
+			Player:              player,
+			PreviousNumberToHit: previousNumber,
+		})
 		return
 	}
 
@@ -295,6 +314,44 @@ func checkAndSplit(base *BaseGame, player *player.Player, sequence *undo.Sequenc
 		player.Score.Split = true
 		base.SoundToPlay = "split"
 	}
+
+	previousNumber := player.Score.CurrentNumber
+
+	rnd := base.ThrowRound
+	if base.Variant == "steel" {
+		// Decrease by one cause round 1 is to build up score
+		rnd--
+	}
+	switch rnd {
+	case 1:
+		player.Score.CurrentNumber = 16
+	case 2:
+		player.Score.CurrentNumber = 22
+	case 3:
+		player.Score.CurrentNumber = 17
+	case 4:
+		player.Score.CurrentNumber = 18
+	case 5:
+		player.Score.CurrentNumber = 33
+	case 6:
+		player.Score.CurrentNumber = 19
+	case 7:
+		player.Score.CurrentNumber = 20
+	case 8:
+		player.Score.CurrentNumber = 25
+	case 9:
+		player.Score.CurrentNumber = 0
+	default:
+		break
+	}
+
+	sequence.AddActionToSequence(undo.Action{
+		Action:              "ATCINCREASENUMBER",
+		GameID:              base.UID,
+		Player:              player,
+		PreviousNumberToHit: previousNumber,
+	})
+
 }
 
 func checkEndGame(base *BaseGame, sequence *undo.Sequence) {
