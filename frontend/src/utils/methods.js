@@ -1,6 +1,10 @@
 import { dc, tc } from './checkouts';
 import api from './api';
 
+export const sleep = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
 export const getCheckout = (mode, score) => {
   let returnString = '-';
   if (mode === 'double') {
