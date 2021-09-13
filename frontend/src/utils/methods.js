@@ -92,6 +92,20 @@ export const scoreOrCurrentNumber = (player, gameData) => {
   }
 };
 
+export const currentNumberOrDT = (player) => {
+  // Choose what to display
+  // If player has to hit a certain number show that
+  // If player has to hit any double (22) or any tripe (33) show that
+  switch (player.Score.CurrentNumber) {
+    case 22:
+      return 'Any Double';
+    case 33:
+      return 'Any Triple';
+    default:
+      return player.Score.CurrentNumber;
+  }
+};
+
 export const scoreOrHitorder = (player, gameData, hitorder) => {
   // Choose what to display
   // If player is not on Podium display score

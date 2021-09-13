@@ -4,21 +4,9 @@
   import state from '$stores/stateStore';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { scoreOrCurrentNumber, playSound } from '$utils/methods';
+  import { currentNumberOrDT, playSound } from '$utils/methods';
 
   let gameid = $page.params.gameid;
-
-  // const hitOrder = [
-  //   '15',
-  //   '16',
-  //   'Any Double',
-  //   '17',
-  //   '18',
-  //   'Any Triple',
-  //   '19',
-  //   '20',
-  //   '25',
-  // ];
 
   onMount(async () => {
     // init websocket
@@ -104,32 +92,10 @@
               </svg>
               {#if $state.gameData.Variant === 'steel'}
                 {#if $state.gameData.ThrowRound >= 2}
-                  {#if $state.gameData.ThrowRound == 4}
-                    Any Double
-                  {:else if $state.gameData.ThrowRound == 7}
-                    Any Triple
-                  {:else}
-                    {scoreOrCurrentNumber(player, $state.gameData)}
-                  {/if}
-                  <!-- {scoreOrHitorder(
-                    player,
-                    $state.gameData,
-                    hitOrder[$state.gameData.ThrowRound - 2]
-                  )} -->
+                  {currentNumberOrDT(player)}
                 {:else}Throw Start Score{/if}
               {:else}
-                  {#if $state.gameData.ThrowRound == 3}
-                    Any Double
-                  {:else if $state.gameData.ThrowRound == 6}
-                    Any Triple
-                  {:else}
-                    {scoreOrCurrentNumber(player, $state.gameData)}
-                  {/if}
-                <!-- {scoreOrHitorder(
-                  player,
-                  $state.gameData,
-                  hitOrder[$state.gameData.ThrowRound - 1]
-                )} -->
+                  {currentNumberOrDT(player)}
               {/if}
             </p>
             <p class="font-semibold  text-2xl mt-5 flex flex-row">
