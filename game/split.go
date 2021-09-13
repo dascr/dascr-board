@@ -291,7 +291,7 @@ func splitLogic(g *SplitGame, player *player.Player, number, modifier int, seque
 
 func checkAndSplit(base *BaseGame, player *player.Player, sequence *undo.Sequence) {
 	if base.Variant == "steel" && base.ThrowRound == 1 {
-		previousNumber := player.Score.CurrentNumber
+		previousNumber := 0
 		player.Score.CurrentNumber = 15
 		sequence.AddActionToSequence(undo.Action{
 			Action:              "ATCINCREASENUMBER",
@@ -315,7 +315,7 @@ func checkAndSplit(base *BaseGame, player *player.Player, sequence *undo.Sequenc
 		base.SoundToPlay = "split"
 	}
 
-	previousNumber := player.Score.CurrentNumber
+	var previousNumber int
 
 	rnd := base.ThrowRound
 	if base.Variant == "steel" {
@@ -324,22 +324,31 @@ func checkAndSplit(base *BaseGame, player *player.Player, sequence *undo.Sequenc
 	}
 	switch rnd {
 	case 1:
+		previousNumber = 15
 		player.Score.CurrentNumber = 16
 	case 2:
+		previousNumber = 16
 		player.Score.CurrentNumber = 22
 	case 3:
+		previousNumber = 22
 		player.Score.CurrentNumber = 17
 	case 4:
+		previousNumber = 17
 		player.Score.CurrentNumber = 18
 	case 5:
+		previousNumber = 18
 		player.Score.CurrentNumber = 33
 	case 6:
+		previousNumber = 33
 		player.Score.CurrentNumber = 19
 	case 7:
+		previousNumber = 19
 		player.Score.CurrentNumber = 20
 	case 8:
+		previousNumber = 20
 		player.Score.CurrentNumber = 25
 	case 9:
+		previousNumber = 25
 		player.Score.CurrentNumber = 0
 	default:
 		break
