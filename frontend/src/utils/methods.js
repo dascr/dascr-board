@@ -7,7 +7,7 @@ export const getCheckout = (mode, score) => {
     if (dc[score]) {
       returnString = dc[score];
     }
-  } else if (mode === 'triple') {
+  } else if (mode === 'master') {
     if (tc[score]) {
       returnString = tc[score];
     }
@@ -32,6 +32,8 @@ export const transformGameMessage = (data, active) => {
           data.GameState !== 'WON'
         ) {
           data.Message = getCheckout(data.Out, active.Score.Score);
+          console.log(data.Message);
+          break;
         }
       }
     case 'elim':
@@ -48,6 +50,7 @@ export const transformGameMessage = (data, active) => {
           data.GameState !== 'WON'
         ) {
           data.Message = getCheckout(data.Out, delta);
+          break;
         }
       }
     // TODO reverse checkout table for elim
