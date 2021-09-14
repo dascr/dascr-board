@@ -10,6 +10,10 @@
   import setupGame from '$stores/gameStore';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
+  import DragDrop from 'svelte-dragdroplist';
+  import AtcController from '../controller/ATCController.svelte';
+  import AtcFormParts from './formparts/ATCFormParts.svelte';
+  import AtcRules from './rules/ATCRules.svelte';
 
   let gameID = $page.params.gameid;
   let games = [
@@ -21,11 +25,27 @@
     { id: 'elim', text: 'Elimination' },
   ];
 
+  let selectedPlayer = [];
+
   let punisherAvailable = ['x01', 'elim'];
 
   let availablePlayer = [];
   let open;
   let gameMode = X01FormParts;
+
+  const updateSelected = () => {
+    selectedPlayer = [];
+    $setupGame.player.map((pl) => {
+      console.log(pl);
+      pl.Nickname
+        ? selectedPlayer.push({
+            UID: pl.UID,
+            text: pl.Name + ' - ' + pl.Nickname,
+          })
+        : selectedPlayer.push({ UID: pl.UID, text: pl.Name });
+    });
+    console.log(selectedPlayer);
+  };
 
   $: {
     let selectedGame = $setupGame.game;
@@ -62,7 +82,10 @@
   });
 
   async function handleSubmit() {
-    let playerInt = $setupGame.player.map((el) => parseInt(el));
+    let playingPlayer = [];
+    let playerInt = $setupGame.player.map((el) => {
+      playingPlayer.push(parseInt(el.UID));
+    });
 
     await api
       .post(`game/${gameID}`, {
@@ -102,18 +125,26 @@
       <label for="selectPlayer" class="uppercase font-bold text-lg"
         >Select Players:</label
       >
-      <select
-        bind:value={$setupGame.player}
-        class="border py-2 px-3 text-gray-900"
-        id="selectPlayer"
-        name="player"
-        multiple
-        required
-      >
-        {#each availablePlayer || [] as player}
-          <option value={player.UID}>{player.Name}</option>
-        {/each}
-      </select>
+      <div class="flex flex-row">
+        <div>
+          <select
+            bind:value={$setupGame.player}
+            on:change={updateSelected}
+            class="border py-2 px-3 text-gray-900"
+            id="selectPlayer"
+            name="player"
+            multiple
+            required
+          >
+            {#each availablePlayer || [] as player}
+              <option value={player}>{player.Name}</option>
+            {/each}
+          </select>
+        </div>
+        <div class="py-2 px-3 text-gray-900">
+          <DragDrop bind:data={selectedPlayer} removeItems={false} />
+        </div>
+      </div>
     </div>
 
     <div class="flex flex-col">

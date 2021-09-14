@@ -36,6 +36,7 @@
     "crypto-js": "^4.1.1",
     "ky": "^0.28.5",
     "sirv-cli": "^1.0.14",
+    "svelte-dragdroplist": "^1.1.1",
     "svelte-easy-crop": "^1.0.4"
   }
 }
