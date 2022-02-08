@@ -7,9 +7,6 @@ const config = {
     adapter: adapter({
       fallback: 'index.html',
     }),
-    // hydrate the <div id="svelte"> element in src/app.html
-    target: '#svelte',
-    ssr: false,
     vite: {
       resolve: {
         alias: {
@@ -20,6 +17,8 @@ const config = {
         },
       },
     },
+  },
+  browser: {
     router: true,
   },
 };
