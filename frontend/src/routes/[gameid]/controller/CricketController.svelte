@@ -127,12 +127,12 @@
                     class="px-3 border-r border-l border-dashed border-opacity-10">
                     {scoreOrPodium(player, $state.gameData)}
                 </td>
-                {#each player.Score.Numbers as num}
+                {#if player.Score.Numbers}{#each player.Score.Numbers as num}
                     <td
                         class="px-3 border-r border-l border-dashed border-opacity-10">
                         {num}
                     </td>
-                {/each}
+                {/each}{/if}
                 {#each player.LastThrows as thr}
                     <td
                         class="border-r border-l border-dashed border-opacity-10">
