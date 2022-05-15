@@ -17,16 +17,6 @@
     const ws = im.default;
     const socket = ws.init(gameid, 'Cricket Scoreboard');
 
-    await state.updateState(gameid).then(async () => {
-      if ($state.gameData.Settings.Sound) {
-        await playSound($state.soundToPlay);
-      }
-    });
-
-    const res = setCricketModeHeader($state.gameData);
-    mode = res[0];
-    randomGhost = res[1];
-
     socket.addEventListener('update', async () => {
       await state.updateState(gameid).then(async () => {
         if ($state.gameData.Settings.Sound) {
@@ -38,6 +28,17 @@
     socket.addEventListener('redirect', () => {
       goto(`/${gameid}/start`);
     });
+
+    await state.updateState(gameid).then(async () => {
+      if ($state.gameData.Settings.Sound) {
+        await playSound($state.soundToPlay);
+      }
+    });
+
+    const res = setCricketModeHeader($state.gameData);
+    mode = res[0];
+    randomGhost = res[1];
+
   });
 </script>
 
