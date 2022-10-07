@@ -46,6 +46,12 @@ build-armv8_64: download
 	@echo "[OK] App binary was created!"
 	@echo "[OK] Your backend binary is at ./dist/<os>/"
 
+build-darwin-apple-silicon: download
+	@echo "[*] Building for darwin_arm64 (apple silicon)"
+	@CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o dist/darwin_arm64/dascr-board
+	@echo "[OK] App binary was created!"
+	@echo "[OK] Your backend binary is at ./dist/<os>/"
+
 build-frontend: clean-frontend
 	@echo "[*] Building SvelteKit App"
 	@cd frontend &&  pnpm install --silent

@@ -9,25 +9,26 @@
     "url": "https://github.com/dascr/dascr-board"
   },
   "scripts": {
-    "dev:only": "svelte-kit dev",
-    "build:only": "svelte-kit build",
-    "preview": "svelte-kit preview",
+    "dev:only": "vite dev",
+    "build:only": "vite build",
+    "preview": "vite preview",
     "tailwind:watch": "cross-env TAILWIND_MODE=watch cross-env NODE_ENV=development postcss src/styles/tailwind.css -o src/styles/tailwind-output.css -w",
     "tailwind:build": "cross-env TAILWIND_MODE=build cross-env NODE_ENV=production postcss src/styles/tailwind.css -o src/styles/tailwind-output.css",
     "dev": "concurrently \"npm run dev:only\" \"npm run tailwind:watch\"",
     "build": "npm run tailwind:build && npm run build:only"
   },
   "devDependencies": {
-    "@sveltejs/adapter-node": "^1.0.0-next.43",
-    "@sveltejs/adapter-static": "^1.0.0-next.17",
+    "@neoconfetti/svelte": "^1.0.0",
+    "@sveltejs/adapter-static": "next",
     "@sveltejs/kit": "next",
     "autoprefixer": "^10.3.3",
     "concurrently": "^6.2.1",
     "cross-env": "^7.0.3",
     "postcss": "^8.3.6",
     "postcss-cli": "^8.3.1",
-    "svelte": "^3.34.0",
-    "tailwindcss": "^2.2.8"
+    "svelte": "^3.46.0",
+    "tailwindcss": "^2.2.8",
+    "vite": "^3.1.0"
   },
   "type": "module",
   "dependencies": {

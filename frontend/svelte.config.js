@@ -1,25 +1,17 @@
-import { resolve } from 'path';
 import adapter from '@sveltejs/adapter-static';
 
-// /** @type {import('@sveltejs/kit').Config} */
+/** @type {import('@sveltejs/kit').Config} */
 const config = {
   kit: {
     adapter: adapter({
       fallback: 'index.html',
     }),
-    vite: {
-      resolve: {
-        alias: {
-          $components: resolve('./src/components'),
-          $stores: resolve('./src/utils/stores'),
-          $utils: resolve('./src/utils'),
-          $styles: resolve('./src/styles'),
-        },
-      },
+    alias: {
+      $components: './src/components',
+      $stores: './src/utils/stores',
+      $utils: './src/utils',
+      $styles: './src/styles',
     },
-  },
-  browser: {
-    router: true,
   },
 };
 
