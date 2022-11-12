@@ -1,0 +1,20 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build backend Docker image 
+      run: docker build . --file Dockerfile --tag dascr-board-svc:$(date +%s)
+    - name: Build frontend Docker image 
+      run: docker build ./frontend --file ./frontend/Dockerfile --tag dascr-board-ui:$(date +%s)
