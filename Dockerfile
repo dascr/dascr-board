@@ -1,37 +1,18 @@
-FROM golang:1.17-alpine
-RUN apk update
-RUN apk upgrade
-RUN apk add --no-cache git make build-base
+# build backend service
+FROM golang:1.19 AS build
 
-# Set necessary environmet variables needed for our image
-ENV GO111MODULE=on
-ENV CGO_ENABLED=1
-ENV GOOS=linux
-ENV GOARCH=amd64
-ENV API_IP=0.0.0.0
-ENV API_PORT=8000
+WORKDIR /usr/src/app
 
-# Move to working directory /build
-WORKDIR /build
+# pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
 
-# Copy and download dependency using go mod
-COPY go.mod .
-COPY go.sum .
-RUN go mod download
-
-# Copy the code into the container
 COPY . .
+RUN go build -v -o /usr/local/bin/app .
 
-# Build the application
-RUN go build -o dascr-board .
 
-# Move to /dist directory as the place for resulting binary folder
-WORKDIR /dist
-
-# Copy binary from build to main folder
-RUN cp /build/dascr-board .
-
+# build runtime image
+FROM debian:bullseye-slim
+COPY --from=build /usr/local/bin/app /usr/local/bin/app
 EXPOSE 8000
-
-# Command to run when starting the container
-CMD ["/dist/dascr-board"]
+CMD ["app"]
