@@ -130,20 +130,32 @@ You will need to restart the backend service if you change something in the go c
 
 # Docker
 
+## Locally
+
 You can build and run the two services with docker, too. I provided a Dockerfile each.
 
 So in root you can run `docker build . -t dascr-board-backend` and in the folder *frontend* you can run `docker build . -t dascr-board-frontend` to build those two services.
-
-Afterwards you can run them. Be sure to put them on the same network and to expose port `5000` on the frontend container to be able to interact with it.
-
-If you want to add some recognition software to the mix you will have to expose the API on backend container on port `8000` as well.
 
 To make this easy for you I also designed a docker-compose file. You can run all of this by doing:
 
 ```bash
 docker network create dascr
-docker-compose up
+docker-compose -f docker-compose-local.yml up
 ```
+
+After a successful startup you can access the web ui at port `8080`.
+
+## Docker Release Image
+
+If you do not want to build the docker images yourself this repository also has the latest version as an Release Package. I provide the file `docker-compose-repo.yml` for easy running as well.
+
+```bash
+docker network create dascr
+docker-compose -f docker-compose-repo.yml up
+```
+
+After a successful startup you can access the web ui at port `8080`.
+
 
 # Usage
 When running you need to navigate your browser to `http://ip:port` of the frontend. Basically everything there is explained in detail. But in short you need to create player and then you need two browser windows. One is pointing at `http://ip:port/<gameid>/start`. There the scoreboard will be shown after starting a game. To start a game and input data you point your browser to `http://ip:port/<gameid>/game`.
