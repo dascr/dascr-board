@@ -19,24 +19,24 @@
   },
   "devDependencies": {
     "@neoconfetti/svelte": "^1.0.0",
-    "@sveltejs/adapter-static": "next",
-    "@sveltejs/kit": "next",
-    "autoprefixer": "^10.3.3",
-    "concurrently": "^6.2.1",
+    "@sveltejs/adapter-static": "2.0.2",
+    "@sveltejs/kit": "^1.16.3",
+    "autoprefixer": "^10.4.14",
+    "concurrently": "^8.0.1",
     "cross-env": "^7.0.3",
-    "postcss": "^8.3.6",
-    "postcss-cli": "^8.3.1",
-    "svelte": "^3.46.0",
-    "tailwindcss": "^2.2.8",
-    "vite": "^3.1.0"
+    "postcss": "^8.4.23",
+    "postcss-cli": "^10.1.0",
+    "svelte": "^3.54.0",
+    "tailwindcss": "^3.3.2",
+    "vite": "^4.3.6"
   },
   "type": "module",
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.15.4",
-    "@zerodevx/svelte-toast": "^0.5.1",
+    "@fortawesome/fontawesome-free": "^6.4.0",
+    "@zerodevx/svelte-toast": "^0.9.3",
     "crypto-js": "^4.1.1",
-    "ky": "^0.28.5",
-    "sirv-cli": "^1.0.14",
-    "svelte-easy-crop": "^1.0.4"
+    "ky": "^0.33.3",
+    "sirv-cli": "^2.0.2",
+    "svelte-easy-crop": "^2.0.1"
   }
 }
