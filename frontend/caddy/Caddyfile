@@ -1,7 +1,7 @@
-:5000
+:8080
 bind 0.0.0.0
 
-root * /usr/src/app/build
+root * /usr/share/caddy
 encode gzip
 
 handle /api/* {
@@ -40,7 +40,7 @@ Referrer-Policy no-referrer-when-downgrade
 }
 
 log {
-	output file /usr/src/caddy/dascr-board.log {
+	output file /var/log/dascr-board.log {
 		roll_size 1gb
 		roll_keep 5
 		roll_keep_for 720h
