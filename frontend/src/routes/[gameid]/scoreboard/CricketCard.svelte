@@ -50,7 +50,7 @@
             {scoreOrPodium(player, gameData)}
         </div>
         <div>
-            {#each player.Score.Numbers as num, i}
+            {#if player.Score.Numbers}{#each player.Score.Numbers as num, i}
                 {#if gameData.CricketController.NumberClosed[i]}
                     <Bullet
                         number={gameData.CricketController.Numbers[i]}
@@ -73,7 +73,7 @@
                         done={true}
                         closed={false} />
                 {/if}
-            {/each}
+            {/each}{/if}
         </div>
     </div>
 </div>

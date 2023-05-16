@@ -14,12 +14,6 @@
     const ws = im.default;
     const socket = ws.init(gameid, 'ATC Scoreboard');
 
-    await state.updateState(gameid).then(async () => {
-      if ($state.gameData.Settings.Sound) {
-        await playSound($state.soundToPlay);
-      }
-    });
-
     socket.addEventListener('update', async () => {
       await state.updateState(gameid).then(async () => {
         if ($state.gameData.Settings.Sound) {
@@ -31,6 +25,13 @@
     socket.addEventListener('redirect', () => {
       goto(`/${gameid}/start`);
     });
+
+    await state.updateState(gameid).then(async () => {
+      if ($state.gameData.Settings.Sound) {
+        await playSound($state.soundToPlay);
+      }
+    });
+
   });
 </script>
 
