@@ -260,9 +260,9 @@ When building my frontend I made sure to have my .env to point to my domain inst
 
 **.env in frontend folder**
 ```bash
-API_BASE=https://example.com/
-API_URL=https://example.co/api
-WS_URL=wss://example.com/ws
+VITE_API_BASE=https://example.com/
+VITE_API_URL=https://example.co/api
+VITE_WS_URL=wss://example.com/ws
 ```
 
 Also make sure to choose the right protocol here. Caddy server automatically uses https and therefore also *wss* is used instead of *ws*.
