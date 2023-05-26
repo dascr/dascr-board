@@ -59,6 +59,10 @@ build-frontend: clean-frontend
 	@echo "[OK] SvelteKit App was built"
 	@echo "[OK] Serve content of ./frontend/build via a webserver"
 
+customize-docker:
+	@echo "[!] Customizing Docker Image"
+	@scripts/customize-docker.sh
+
 download:
 	@echo "[*] go mod dowload"
 	@go mod download
@@ -84,3 +88,7 @@ run-dev-backend:
 run-dev-frontend:
 	@echo "[*] Starting Frontend Development, listening to 127.0.0.1"
 	@pnpm --dir "./frontend" run dev
+
+run-docker: customize-docker
+	@echo "[*] Building and running Docker Image"
+	@docker-compose -f docker-compose-local.yml up --build

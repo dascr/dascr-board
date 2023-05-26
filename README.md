@@ -41,9 +41,9 @@ Before building the frontend you will need to provide a file called `.env` in fo
 
 **.env in frontend folder**
 ```bash
-API_BASE=http://localhost:8000/
-API_URL=http://localhost:8000/api
-WS_URL=ws://localhost:8000/ws
+VITE_API_BASE=http://localhost:8000/
+VITE_API_URL=http://localhost:8000/api
+VITE_WS_URL=ws://localhost:8000/ws
 ```
 
 This file will tell the frontend where to look for the backend api. Remember you need to provide this information at build time. So if the location of the backend changes (another ip or url) you need to rebuild the app.
@@ -143,7 +143,18 @@ docker network create dascr
 docker-compose -f docker-compose-local.yml up
 ```
 
-After a successful startup you can access the web ui at port `8080`.
+After a successful startup you can access the web ui at port `8080`. CAUTION: The Scoreboard will only be functional from this one host it is running on.
+
+### Different IP Address than localhost
+
+By default the procedure above will build the docker image in a way where the scoreboard will only work on the system it was built on. If you need to separate the "viewing client" from the client running the scoreboard, you will need to use the Makefile to build and first run the docker image. 
+
+Step 1 will be to create a file called `.env` in the folder `frontend` as described above at "Building the frontend" and fill in the corresponding ip address of the host running the scoreboard. Then you issue `make run-docker` for the customization to be applied at build time.
+
+It should run the Scoreboard on port `8080` on that ip you chose and also it should be reachable and functional from within your network.
+
+For the second startup `docker-compose -f docker-compose-local.yml up` should be enough.
+
 
 ## Docker Release Image
 
@@ -154,7 +165,7 @@ docker network create dascr
 docker-compose -f docker-compose-repo.yml up
 ```
 
-After a successful startup you can access the web ui at port `8080`.
+After a successful startup you can access the web ui at port `8080`. **CAUTION: This build will only work for running and viewing the Scoreboard from one and the same host. If you need to access the scoreboard from another host in the network, you will need to run the procedure described above.**
 
 
 # Usage
