@@ -1,5 +1,5 @@
 # build backend service
-FROM golang:1.19 AS build
+FROM golang:1.21 AS build
 
 WORKDIR /usr/src/app
 
