@@ -1,5 +1,5 @@
 # build backend service
-FROM golang:1.19 AS build
+FROM golang:1.21 AS build
 
 WORKDIR /usr/src/app
 
@@ -12,7 +12,7 @@ RUN go build -v -o /usr/local/bin/app .
 
 
 # build runtime image
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 COPY --from=build /usr/local/bin/app /usr/local/bin/app
 EXPOSE 8000
 CMD ["app"]
